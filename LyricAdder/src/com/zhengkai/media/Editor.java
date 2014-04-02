@@ -22,6 +22,9 @@ import org.htmlparser.tags.Span;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
+
 public class Editor {
 	private final static String encoding = "UTF-8";
 	private final static String urlStringBase_gecime = "http://geci.me/api/lyric/";
@@ -191,7 +194,7 @@ public class Editor {
 				Parser songNodeParser;
 
 				// System.out.println("i = " + i);
-				// System.out.println(node.toHtml());
+				// System.out.println(songNode.toHtml());
 
 				// <span class="song-title">歌曲:<a href="/song/7451676"
 				// title="歌曲名"> ......
@@ -202,10 +205,10 @@ public class Editor {
 				Node titleNodeParent = songNodeParser.parse(titleFilter).elementAt(0);
 				TagNode titleNode = (TagNode) titleNodeParent.getChildren().elementAt(1);
 				title = titleNode.getAttribute("title");
-				// System.out.println(title);
-				
+				System.out.println(title);
+
 				String artist = null;
-				if(hasArtist) {
+				if (hasArtist) {
 					// <span class="artist-title">歌手:<span class="author_list"
 					// title="歌手名"> ......
 					songNodeParser = new Parser(songNode.toHtml());
@@ -214,30 +217,33 @@ public class Editor {
 					Node artistNodeParent = songNodeParser.parse(artistFilter).elementAt(0);
 					TagNode artistNode = (TagNode) artistNodeParent.getChildren().elementAt(1);
 					artist = artistNode.getAttribute("title");
-					// System.out.println(artist);
+					System.out.println(artist);
 				}
-				
+
 				boolean found = false;
-				if(hasArtist) {
-					if (song.title.equalsIgnoreCase(title) && song.artist.equalsIgnoreCase(artist)) {
+				if (hasArtist) {
+					if (matched(song, title, artist)) {
 						found = true;
 					}
 				} else {
-					if (song.title.equalsIgnoreCase(title)) {
+					if (matched(song, title)) {
 						found = true;
 					}
 				}
 
 				if (found) {
+					//System.out.println(songNode.toHtml());
+					//System.out.println("-----");
+					
 					// <span class="lyric-action">
 					songNodeParser = new Parser(songNode.toHtml());
-					System.out.println(songNode.toHtml());
-					System.out.println("-----");
 					AndFilter lyricFilter = new AndFilter(new TagNameFilter("span"),
 							new HasAttributeFilter("class", "lyric-action"));
 					Node lyricNodeParent = (Span) songNodeParser.parse(lyricFilter).elementAt(0);
-					System.out.println(lyricNodeParent.toHtml());
-
+					if (lyricNodeParent == null) {
+						continue;
+					}
+					// System.out.println(lyricNodeParent.toHtml());
 					NodeList lyricNodeList = lyricNodeParent.getChildren();
 
 					for (int j = 0; j != lyricNodeList.size(); j++) {
@@ -278,6 +284,17 @@ public class Editor {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	private boolean matched(Song song, String title, String artist) {
+		return (song.title.contains(title) && song.artist.contains(artist))
+				|| (title.contains(song.title) && song.artist.contains(artist))
+				|| (title.contains(song.title) && artist.contains(song.artist))
+				|| (song.title.contains(title) && artist.contains(song.artist));
+	}
+
+	private boolean matched(Song song, String title) {
+		return (song.title.contains(title)) || (title.contains(song.title));
 	}
 
 	// 将歌名或歌手名中的空格替换为%20

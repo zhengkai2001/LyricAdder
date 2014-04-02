@@ -12,7 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 
 public class LyricSystem {
-	private final static String md = "F:\\Music\\Ray Charles";
+	private final static String md = "D:\\Music1\\";
 	private final static String ld = "D:\\Lyrics\\";
 
 	private JFrame mainFrame;
