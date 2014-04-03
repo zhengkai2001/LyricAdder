@@ -16,46 +16,41 @@ import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
 public class Song extends MusicObject {
 	private MP3File mp3File;
 	private Tag tag;
-	public boolean foundLyric;
+
 	private int modifyTitleMethod;
-	
+
 	public String album;
 	public int trackNo;
 	public int discNo;
 	public int year;
 	public String gene;
-	
 
 	public Song() {
 		super();
-		foundLyric = false;
 	}
 
 	public Song(String filePath) {
 		super(filePath);
-		foundLyric = false;
 		modifyTitleMethod = 0;
 		try {
 			this.mp3File = new MP3File(this.filePath);
 			this.tag = mp3File.getTag();
 
-			this.artist = getArtistNameFromTag(this.tag);
-			this.title = getSongTitleFromTag(this.tag);
-
-		} catch (IOException | TagException | ReadOnlyFileException
-				| InvalidAudioFrameException e) {
+			this.artist = getArtistFromTag().toLowerCase();
+			this.title = getTitleFromTag().toLowerCase();
+		} catch (IOException | TagException | ReadOnlyFileException | InvalidAudioFrameException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private String getArtistNameFromTag(Tag tag) {
-		return tag.getFirst(FieldKey.ARTIST);
+	protected String getArtistFromTag() {
+		return this.tag.getFirst(FieldKey.ARTIST);
 	}
 
-	private String getSongTitleFromTag(Tag tag) {
+	protected String getTitleFromTag() {
 		return tag.getFirst(FieldKey.TITLE);
 	}
-	
+
 	public void removeTag() {
 		try {
 			AbstractID3v2Tag tag = this.mp3File.getID3v2Tag();
@@ -99,8 +94,7 @@ public class Song extends MusicObject {
 	}
 
 	public void outputInfo() {
-		MP3AudioHeader mp3AudioHeader = (MP3AudioHeader) this.mp3File
-				.getAudioHeader();
+		MP3AudioHeader mp3AudioHeader = (MP3AudioHeader) this.mp3File.getAudioHeader();
 
 		System.out.println(mp3AudioHeader.getTrackLength());
 		System.out.println(mp3AudioHeader.getSampleRateAsNumber());
@@ -112,8 +106,7 @@ public class Song extends MusicObject {
 		String title = this.tag.getFirst(FieldKey.TITLE);
 
 		int slash = filePath.lastIndexOf('\\');
-		String newFilePath = filePath.substring(0, slash + 1) + title
-				+ extensionName;
+		String newFilePath = filePath.substring(0, slash + 1) + title + extensionName;
 
 		File file = new File(this.filePath);
 		File newFile = new File(newFilePath);
@@ -122,17 +115,20 @@ public class Song extends MusicObject {
 	}
 
 	public void tryModifyTitle() {
-		modifyTitleMethod++;
+		if (modifyTitleMethod == 0) {
+			// 什么也不做
 
-		if (modifyTitleMethod == 1) {
+		} else if (modifyTitleMethod == 1) {
 			this.title = deleteSectionBetween(this.title, '(', ')');
 
 		} else if (modifyTitleMethod == 2) {
 			this.title = this.title.replaceAll(",", "，");
 		}
+
+		modifyTitleMethod++;
 	}
 
 	public boolean hasModifyTitleMethod() {
-		return (modifyTitleMethod < 2);
+		return (modifyTitleMethod <= 2);
 	}
 }

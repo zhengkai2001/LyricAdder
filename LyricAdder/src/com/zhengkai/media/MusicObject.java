@@ -2,7 +2,7 @@ package com.zhengkai.media;
 
 public class MusicObject {
 	protected String filePath;
-	
+
 	public String fileFullName;
 	public String fileName;
 	public String extensionName;
@@ -15,22 +15,29 @@ public class MusicObject {
 
 	public MusicObject(String filePath) {
 		this.filePath = filePath;
-		this.fileFullName = getFileFullName(this.filePath);
-		this.fileName = getFileName(this.fileFullName);
+		this.fileFullName = getFileFullName();
+		this.fileName = getFileName();
 
 		this.extensionName = getExtensionName(this.fileFullName);
 
-		this.artist = getArtistNameFromFile(this.fileName);
-		this.title = getSongNameFromFile(this.fileName);
+		this.artist = getArtist();
+		if (this.artist != null) {
+			this.artist = this.artist.toLowerCase();
+		}
+
+		this.title = getTitle().toLowerCase();
+		if (this.title != null) {
+			this.title = this.title.toLowerCase();
+		}
 	}
 
-	private String getFileFullName(String filePath) {
-		int slash = filePath.lastIndexOf('\\');
+	private String getFileFullName() {
+		int slash = this.filePath.lastIndexOf('\\');
 		return filePath.substring(slash + 1);
 	}
 
-	private String getFileName(String fileFullName) {
-		int dot = fileFullName.lastIndexOf('.');
+	private String getFileName() {
+		int dot = this.fileFullName.lastIndexOf('.');
 		return fileFullName.substring(0, dot);
 	}
 
@@ -39,21 +46,21 @@ public class MusicObject {
 		return fileFullName.substring(dot);
 	}
 
-	private String getArtistNameFromFile(String fileName) {
-		int dash = fileName.indexOf('-');
+	protected String getArtist() {
+		int dash = this.fileName.indexOf('-');
 		if (dash == -1) {
 			return null;
 		} else {
-			return fileName.substring(0, dash - 1).trim();
+			return this.fileName.substring(0, dash - 1).trim();
 		}
 	}
 
-	private String getSongNameFromFile(String fileName) {
-		int dash = fileName.indexOf('-');
+	protected String getTitle() {
+		int dash = this.fileName.indexOf('-');
 		if (dash == -1) {
-			return fileName;
+			return this.fileName;
 		} else {
-			return fileName.substring(dash + 1, fileName.length()).trim();
+			return this.fileName.substring(dash + 1, this.fileName.length()).trim();
 		}
 	}
 
