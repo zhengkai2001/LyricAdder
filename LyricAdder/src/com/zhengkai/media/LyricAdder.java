@@ -1,25 +1,31 @@
 package com.zhengkai.media;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * 歌词添加器类
+ * 
+ * @author zhengkai
+ * @date 2014年4月15日
+ */
 public class LyricAdder extends Thread {
-	protected final static String encoding = "UTF-8";
-
 	private String musicDirectory;
 	private String lyricDirectory;
 
+	private HashMap<String, ArrayList<MusicObject>> arrayListMap = new HashMap<String, ArrayList<MusicObject>>();
 	private ArrayList<MusicObject> songs;
 	private ArrayList<MusicObject> lyrics;
 
+	private HashMap<String, String[]> extensionMap = new HashMap<String, String[]>();
+	private String[] musicFileExtensions = new String[] { ".mp3", ".m4a" };
+	private String[] lyricFileExtensions = new String[] { ".lrc", ".txt" };
+
 	@SuppressWarnings("rawtypes")
-	private HashMap<String, Class> map;
+	private HashMap<String, Class> classMap = new HashMap<String, Class>();
 
 	private boolean useLocalLyric;
 
@@ -29,10 +35,10 @@ public class LyricAdder extends Thread {
 	 * 添加歌词
 	 */
 	public void addLyrics() {
-		travel(songs, musicDirectory, "mp3");
+		travel(musicDirectory, "music");
 
 		if (useLocalLyric) {
-			travel(lyrics, lyricDirectory, "lrc");
+			travel(lyricDirectory, "lyric");
 			addLyricsLocal();
 		} else {
 			addLyricsFromInternet();
@@ -66,7 +72,7 @@ public class LyricAdder extends Thread {
 	 * 为某一首歌曲从网上获取歌词
 	 * 
 	 * @param song
-	 *            指定的歌曲
+	 *        指定的歌曲
 	 * @return 歌词
 	 */
 	private ArrayList<String> getLyricFromInternet(Song song) {
@@ -74,16 +80,36 @@ public class LyricAdder extends Thread {
 	}
 
 	/**
-	 * 在指定目录下，遍历指定扩展名
+	 * 在指定目录下，遍历指定类型的文件
 	 * 
 	 * @param mol
-	 *            用于存放遍历结果的容器
+	 *        用于存放遍历结果的容器
 	 * @param path
-	 *            指定的目录
-	 * @param extensionName
-	 *            指定的扩展名
+	 *        指定的目录
+	 * @param type
+	 *        指定的文件类型
 	 */
-	private void travel(ArrayList<MusicObject> mol, String path, String extensionName) {
+	private void travel(String path, String type) {
+		System.out.println(type);
+		ArrayList<MusicObject> mol = arrayListMap.get(type);
+		System.out.println(mol);
+		String[] extensions = extensionMap.get(type);
+		travel(mol, path, type, extensions);
+	}
+
+	/**
+	 * 在指定目录下，遍历指定类型的文件
+	 * 
+	 * @param mol
+	 *        用于存放遍历结果的容器
+	 * @param path
+	 *        指定的目录
+	 * @param type
+	 *        指定的文件类型
+	 * @param extensions
+	 *        指定的文件扩展名
+	 */
+	private void travel(ArrayList<MusicObject> mol, String path, String type, String[] extensions) {
 		System.out.println(path);
 		File dir = new File(path);
 		File[] files = dir.listFiles();
@@ -96,14 +122,21 @@ public class LyricAdder extends Thread {
 			String absolutePath = file.getAbsolutePath();
 
 			if (file.isDirectory()) {
-				travel(mol, absolutePath, extensionName);
+				travel(mol, absolutePath, type, extensions);
 			} else {
-				if (isSong(absolutePath)) {
-					Song song = new Song(absolutePath);
-					mol.add(song);
-				} else if (isLyric(absolutePath)) {
-					Lyric lyric = new Lyric(absolutePath);
-					mol.add(lyric);
+				for (String extension : extensions) {
+					if (absolutePath.endsWith(extension)) {
+
+						try {
+							@SuppressWarnings({ "rawtypes", "unchecked" })
+							Constructor constructor = classMap.get(type).getConstructor(String.class);
+							mol.add((MusicObject) constructor.newInstance(absolutePath));
+						} catch (NoSuchMethodException | SecurityException | InstantiationException
+								| IllegalAccessException | IllegalArgumentException
+								| InvocationTargetException e) {
+							e.printStackTrace();
+						}
+					}
 				}
 			}
 		}
@@ -132,44 +165,13 @@ public class LyricAdder extends Thread {
 		}
 	}
 
-	//
-	// /**
-	// * 将数字形式的ASCII码字符串（如"&#73;&#46;&#32;&#84;&#79;）转化为字符串
-	// *
-	// * @param input
-	// * 数字形式的ASCII码字符串
-	// * @return 字符串
-	// */
-	// private String transform(String input) {
-	// // String[] input = new String[] {
-	// //
-	// "&#73;&#46;&#32;&#84;&#79;&#71;&#69;&#84;&#72;&#69;&#82;&#78;&#69;&#83;&#83;",
-	// //
-	// "&#40;&#73;&#110;&#115;&#116;&#114;&#117;&#109;&#101;&#110;&#116;&#97;&#108;&#41;",
-	// // "&#73;&#73;&#46;&#32;&#67;&#82;&#79;&#83;&#83;&#70;&#73;&#82;&#69;",
-	// //
-	// "&#74;&#117;&#108;&#105;&#101;&#39;&#115;&#32;&#115;&#105;&#99;&#107;&#32;&#97;&#110;&#100;&#32;&#116;&#105;&#114;&#101;&#100;&#32;&#111;&#102;&#32;&#104;&#101;&#114;&#32;&#106;&#111;&#98;&#32;&#110;&#39;&#97;&#108;&#108;&#32;&#116;&#104;&#101;&#32;&#114;&#101;&#97;&#115;&#111;&#110;&#115;&#32;&#108;&#97;&#116;&#101;&#108;&#121;"};
-	//
-	// StringBuilder result = new StringBuilder();
-	// String[] token = input.split(";");
-	// for (String string : token) {
-	// // System.out.println(string);
-	// string = string.replaceAll("&#", "");
-	// char c = (char) Integer.parseInt(string);
-	// System.out.print(c);
-	//
-	// result.append(c);
-	// }
-	// return result.toString();
-	// }
-
 	/**
 	 * 判定歌曲与歌词是否匹配
 	 * 
 	 * @param song
-	 *            歌曲
+	 *        歌曲
 	 * @param lyric
-	 *            歌词
+	 *        歌词
 	 * @return 是否匹配
 	 */
 	protected boolean matched(Song song, Lyric lyric) {
@@ -180,40 +182,18 @@ public class LyricAdder extends Thread {
 	}
 
 	/**
-	 * 判断某一文件是否为音乐文件
-	 * 
-	 * @param filePath
-	 *            文件的路径
-	 * @return 是否为音乐文件
-	 */
-	private boolean isSong(String filePath) {
-		return filePath.endsWith(".mp3") || filePath.endsWith(".wma");
-	}
-
-	/**
-	 * 判断某一文件是否为歌词文件
-	 * 
-	 * @param filePath
-	 *            文件的路径
-	 * @return 是否为音乐文件
-	 */
-	private boolean isLyric(String filePath) {
-		return filePath.endsWith(".lrc") || filePath.endsWith(".txt");
-	}
-
-	/**
 	 * 构造函数
 	 * 
 	 * @param musicdirectory
-	 *            指定的音乐文件目录
+	 *        指定的音乐文件目录
 	 * @param lyricdirectory
-	 *            指定的歌词文件目录
+	 *        指定的歌词文件目录
 	 */
 	public LyricAdder(String musicdirectory, String lyricdirectory) {
 		this(musicdirectory);
 		this.lyricDirectory = lyricdirectory;
 		lyrics = new ArrayList<MusicObject>();
-		map.put("lrc", Lyric.class);
+		arrayListMap.put("lyric", lyrics);
 		useLocalLyric = true;
 	}
 
@@ -221,14 +201,18 @@ public class LyricAdder extends Thread {
 		this();
 		this.musicDirectory = musicdirectory;
 		songs = new ArrayList<MusicObject>();
-		map.put("mp3", Song.class);
+		arrayListMap.put("music", songs);
 		useLocalLyric = false;
 	}
 
-	@SuppressWarnings("rawtypes")
 	public LyricAdder() {
-		map = new HashMap<String, Class>();
 		lyricHelper = LyricHelper.getInstance();
+
+		extensionMap.put("music", musicFileExtensions);
+		extensionMap.put("lyric", lyricFileExtensions);
+
+		classMap.put("music", Song.class);
+		classMap.put("lyric", Lyric.class);
 	}
 
 	@Override

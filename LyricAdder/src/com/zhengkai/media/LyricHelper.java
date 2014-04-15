@@ -2,6 +2,12 @@ package com.zhengkai.media;
 
 import java.util.ArrayList;
 
+/**
+ * 调用具体的歌词网站助手的助手类
+ * 
+ * @author zhengkai
+ * @date 2014年4月15日
+ */
 public class LyricHelper {
 	GecimeLyricHelper gecimeLyricHelper;
 	BaiduLyricHelper baiduLyricHelper;

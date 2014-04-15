@@ -1,5 +1,11 @@
 package com.zhengkai.media;
 
+/**
+ * 所有音乐文件类的基类
+ * 
+ * @author zhengkai
+ * @date 2014年4月15日
+ */
 public class MusicObject {
 	protected String filePath;
 
@@ -19,6 +25,8 @@ public class MusicObject {
 		this.fileName = getFileName();
 
 		this.extensionName = getExtensionName(this.fileFullName);
+
+		System.out.println(this.extensionName);
 
 		this.artist = getArtist();
 		if (this.artist != null) {
@@ -57,7 +65,7 @@ public class MusicObject {
 
 	protected String getTitle() {
 		int dash = this.fileName.indexOf('-');
-		if (dash == -1) {
+		if (dash <= -1 || dash + 1 >= this.fileName.length()) {
 			return this.fileName;
 		} else {
 			return this.fileName.substring(dash + 1, this.fileName.length()).trim();

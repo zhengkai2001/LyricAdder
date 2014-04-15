@@ -13,6 +13,12 @@ import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 import org.json.JSONObject;
 
+/**
+ * 从百度音乐下载歌词
+ * 
+ * @author zhengkai
+ * @date 2014年4月15日
+ */
 public class BaiduLyricHelper extends LyricHelperBase {
 	private final static String urlStringBase = "http://music.baidu.com/search/lrc?key=";
 	private final static String urlStringBase_lrc = "http://music.baidu.com";
@@ -30,11 +36,11 @@ public class BaiduLyricHelper extends LyricHelperBase {
 	 * 从百度音乐获取歌词
 	 * 
 	 * @param song
-	 *            歌曲
+	 *        歌曲
 	 * @param searchArtist
-	 *            是否要搜索歌手名
+	 *        是否要搜索歌手名
 	 * @param strictLevel
-	 *            匹配的严格程度：3-歌曲名和歌手名需要同时匹配；2-只需要歌曲名匹配；1-直接返回第一条结果
+	 *        匹配的严格程度：3-歌曲名和歌手名需要同时匹配；2-只需要歌曲名匹配；1-直接返回第一条结果
 	 * @return 歌词
 	 */
 
@@ -84,7 +90,7 @@ public class BaiduLyricHelper extends LyricHelperBase {
 				Node titleNodeParent = songNodeParser.parse(titleFilter).elementAt(0);
 				TagNode titleNode = (TagNode) titleNodeParent.getChildren().elementAt(1);
 				title = titleNode.getAttribute("title");
-				// System.out.println(title);
+				System.out.println(title);
 
 				String artist = null;
 				// <span class="artist-title">歌手:<span class="author_list"
@@ -95,7 +101,7 @@ public class BaiduLyricHelper extends LyricHelperBase {
 				Node artistNodeParent = songNodeParser.parse(artistFilter).elementAt(0);
 				TagNode artistNode = (TagNode) artistNodeParent.getChildren().elementAt(1);
 				artist = artistNode.getAttribute("title");
-				// System.out.println(artist);
+				System.out.println(artist);
 
 				boolean found = false;
 				if (strict) {

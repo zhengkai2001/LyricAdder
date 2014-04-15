@@ -3,6 +3,10 @@ package com.zhengkai.media;
 import java.io.File;
 import java.io.IOException;
 
+import org.jaudiotagger.audio.AudioFile;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.CannotWriteException;
 import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.audio.mp3.MP3AudioHeader;
@@ -12,12 +16,18 @@ import org.jaudiotagger.tag.KeyNotFoundException;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagException;
 import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
-import org.jaudiotagger.tag.id3.AbstractTag;
 import org.jaudiotagger.tag.id3.ID3v24Tag;
 
+/**
+ * 歌曲类，代表音乐文件，例如.mp3和.m4a文件等。包括抽象的歌曲文件本身，以及信息头（tag）
+ * 
+ * @author zhengkai
+ * @date 2014年4月15日
+ */
 public class Song extends MusicObject {
 	private MP3File mp3File;
-	boolean hasTagOriginally;
+	private AudioFile audioFile;
+
 	private Tag tag;
 
 	private int modifyTitleMethod;
@@ -26,7 +36,7 @@ public class Song extends MusicObject {
 	public int trackNo;
 	public int discNo;
 	public int year;
-	public String gene;
+	public String genre;
 
 	public Song() {
 		super();
@@ -34,30 +44,34 @@ public class Song extends MusicObject {
 
 	public Song(String filePath) {
 		super(filePath);
-		modifyTitleMethod = 0;
 		try {
-			this.mp3File = new MP3File(this.filePath);
-			AbstractTag originalTag = (AbstractTag) mp3File.getTag();
+			if (extensionName.equals(".mp3")) {
+				this.mp3File = new MP3File(this.filePath);
+				this.tag = this.mp3File.getTag();
+			} else if (extensionName.equals(".m4a")) {
+				this.audioFile = AudioFileIO.read(new File(this.filePath));
+				this.tag = this.audioFile.getTag();
+			}
 
-			if (originalTag == null) {
-				hasTagOriginally = false;
-				System.out.println("no tag " + this.fileFullName);
-				
-				mp3File.setTag(new ID3v24Tag());
-				mp3File.save();
-				
-				this.tag = mp3File.getTag();
+			if (this.tag == null) {
+				if (extensionName.equals(".mp3")) {
+					this.mp3File.setTag(new ID3v24Tag());
+					this.mp3File.save();
+					this.tag = this.mp3File.getTag();
+				} else if (extensionName.equals(".m4a")) {
+					this.tag = this.audioFile.createDefaultTag();
+					this.audioFile.commit();
+					this.tag = this.audioFile.getTag();
+				}
 			} else {
-				hasTagOriginally = true;
-//				System.out.println("has tag");
-				
-				this.tag = mp3File.getTag();
 				this.artist = getArtistFromTag().toLowerCase();
 				this.title = getTitleFromTag().toLowerCase();
 			}
-		} catch (IOException | TagException | ReadOnlyFileException | InvalidAudioFrameException e) {
-			e.printStackTrace();
+		} catch (IOException | TagException | ReadOnlyFileException | InvalidAudioFrameException
+				| CannotReadException | CannotWriteException e) {
 		}
+
+		modifyTitleMethod = 0;
 	}
 
 	protected String getArtistFromTag() {
@@ -71,15 +85,20 @@ public class Song extends MusicObject {
 		if (this.tag != null && this.tag.hasField(FieldKey.TITLE)) {
 			return this.tag.getFirst(FieldKey.TITLE);
 		}
+
 		return "";
 	}
 
 	public void removeTag() {
-		try {
-			AbstractID3v2Tag tag = this.mp3File.getID3v2Tag();
-			mp3File.delete(tag);
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (extensionName.equals(".mp3")) {
+			try {
+				AbstractID3v2Tag tag = this.mp3File.getID3v2Tag();
+				mp3File.delete(tag);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else if (extensionName.equals(".m4a")) {
+
 		}
 	}
 
@@ -103,12 +122,14 @@ public class Song extends MusicObject {
 	public void setLyric(Lyric lyric) {
 		try {
 			String lyricString = lyric.getLyricString();
-			// System.out.println(lyricString);
 			this.tag.setField(FieldKey.LYRICS, lyricString);
-			this.mp3File.save();
 
-			// this.outputLyric();
-		} catch (KeyNotFoundException | IOException | TagException e) {
+			if (extensionName.equals(".mp3")) {
+				this.mp3File.save();
+			} else if (extensionName.equals(".m4a")) {
+				this.audioFile.commit();
+			}
+		} catch (CannotWriteException | KeyNotFoundException | IOException | TagException e) {
 			e.printStackTrace();
 		}
 	}
@@ -120,12 +141,16 @@ public class Song extends MusicObject {
 	}
 
 	public void outputInfo() {
-		MP3AudioHeader mp3AudioHeader = (MP3AudioHeader) this.mp3File.getAudioHeader();
+		if (extensionName.equals(".mp3")) {
+			MP3AudioHeader mp3AudioHeader = (MP3AudioHeader) this.mp3File.getAudioHeader();
 
-		System.out.println(mp3AudioHeader.getTrackLength());
-		System.out.println(mp3AudioHeader.getSampleRateAsNumber());
-		System.out.println(mp3AudioHeader.getChannels());
-		System.out.println(mp3AudioHeader.isVariableBitRate());
+			System.out.println(mp3AudioHeader.getTrackLength());
+			System.out.println(mp3AudioHeader.getSampleRateAsNumber());
+			System.out.println(mp3AudioHeader.getChannels());
+			System.out.println(mp3AudioHeader.isVariableBitRate());
+		} else if (extensionName.equals(".m4a")) {
+
+		}
 	}
 
 	public void renameFileUsingTitleInTag() {

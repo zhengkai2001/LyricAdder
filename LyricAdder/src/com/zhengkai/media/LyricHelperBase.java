@@ -11,16 +11,20 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * 歌词助手类的基类，包含一些公共操作
+ * 
+ * @author zhengkai
+ * @date 2014年4月15日
+ */
 public abstract class LyricHelperBase {
 	protected final static String encoding = "UTF-8";
 
 	protected static String urlStringBase;
 
 	/**
-	 * 从指定的URL下载HTML内容
-	 * 
 	 * @param urlString
-	 *            指定的URL
+	 *        指定的URL
 	 * @return HTML内容字符串
 	 */
 	protected String getHTMLFromURL(String urlString) {
@@ -58,10 +62,10 @@ public abstract class LyricHelperBase {
 	}
 
 	/**
-	 * 从指定的URL下载LRC歌词，并存入歌词容器
+	 * * 从指定的URL下载LRC歌词，并存入歌词容器
 	 * 
 	 * @param urlString
-	 *            LRC歌词文件的地址
+	 *        LRC歌词文件的地址
 	 * @return 歌词
 	 */
 	protected ArrayList<String> getLRCFromURL(String urlString) {
@@ -99,7 +103,7 @@ public abstract class LyricHelperBase {
 	 * 将歌名或歌手名中的空格替换为%20
 	 * 
 	 * @param string
-	 *            输入字符串
+	 *        输入字符串
 	 * @return 替换后的字符串
 	 */
 	private String replaceSpaces(String string) {
@@ -110,30 +114,35 @@ public abstract class LyricHelperBase {
 	 * 判定歌曲与歌名、歌手名是否匹配
 	 * 
 	 * @param song
-	 *            歌曲
+	 *        歌曲
 	 * @param title
-	 *            歌名
+	 *        歌名
 	 * @param artist
-	 *            歌手名
+	 *        歌手名
 	 * @return 是否匹配
 	 */
 	protected boolean matched(Song song, String title, String artist) {
-		return (song.title.contains(title.toLowerCase()) && song.artist.contains(artist.toLowerCase()))
-				|| (title.toLowerCase().contains(song.title) && song.artist.contains(artist
-						.toLowerCase()))
-				|| (title.toLowerCase().contains(song.title) && artist.toLowerCase().contains(
-						song.artist))
-				|| (song.title.contains(title.toLowerCase()) && artist.toLowerCase().contains(
-						song.artist));
+		if (song.title == null || song.artist == null) {
+			return false;
+		} else {
+			return (song.title.contains(title.toLowerCase()) && song.artist.contains(artist
+					.toLowerCase()))
+					|| (title.toLowerCase().contains(song.title) && song.artist.contains(artist
+							.toLowerCase()))
+					|| (title.toLowerCase().contains(song.title) && artist.toLowerCase().contains(
+							song.artist))
+					|| (song.title.contains(title.toLowerCase()) && artist.toLowerCase().contains(
+							song.artist));
+		}
 	}
 
 	/**
 	 * 判定歌曲与歌名是否匹配
 	 * 
 	 * @param song
-	 *            歌曲
+	 *        歌曲
 	 * @param title
-	 *            歌名
+	 *        歌名
 	 * @return 是否匹配
 	 */
 	protected boolean matched(Song song, String title) {

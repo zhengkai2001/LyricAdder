@@ -5,6 +5,12 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/**
+ * 从歌词迷网站下载歌词
+ * 
+ * @author zhengkai
+ * @date 2014年4月15日
+ */
 public class GecimeLyricHelper extends LyricHelperBase {
 	private final static String urlStringBase = "http://geci.me/api/lyric/";
 
@@ -21,9 +27,9 @@ public class GecimeLyricHelper extends LyricHelperBase {
 	 * 从歌词迷网站获取歌词
 	 * 
 	 * @param song
-	 *            歌曲
+	 *        歌曲
 	 * @param searchArtist
-	 *            是否要搜索歌手名
+	 *        是否要搜索歌手名
 	 * @return 歌词
 	 */
 	public ArrayList<String> getLyric(Song song, boolean searchArtist) {

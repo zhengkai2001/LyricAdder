@@ -6,6 +6,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+/**
+ * 歌词类，代表歌词文件，例如.lrc和.txt文件
+ * 
+ * @author zhengkai
+ * @date 2014年4月15日
+ */
 public class Lyric extends MusicObject {
 	private final static String encoding = "UTF-8";
 	private final static String[] infoList = new String[] { "制作", "QQ", "★", "www.", ".com", "匹配时间为",

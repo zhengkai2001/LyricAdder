@@ -10,9 +10,15 @@ import org.htmlparser.nodes.TagNode;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 
+/**
+ * 从lyricwiki网站下载歌词
+ * 
+ * @author zhengkai
+ * @date 2014年4月15日
+ */
 public class LyricwikiLyricHelper extends LyricHelperBase {
 	private final static String urlStringBase = "http://lyrics.wikia.com/api.php?func=getSong";
-	
+
 	private static LyricwikiLyricHelper instance = new LyricwikiLyricHelper();
 
 	public static LyricwikiLyricHelper getInstance() {
@@ -23,11 +29,11 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 	}
 
 	/**
-	 * 未完成，从歌词页面提取歌词还没写
-	 * 从LyricWiki网站上获取歌词 （http://api.wikia.com/wiki/LyricWiki_API/REST）
+	 * 未完成，从歌词页面提取歌词还没写 从LyricWiki网站上获取歌词
+	 * （http://api.wikia.com/wiki/LyricWiki_API/REST）
 	 * 
 	 * @param song
-	 *            歌曲
+	 *        歌曲
 	 * @return 歌词
 	 */
 	public ArrayList<String> getLyric(Song song) {
