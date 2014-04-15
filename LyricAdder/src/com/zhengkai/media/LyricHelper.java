@@ -6,7 +6,9 @@ public class LyricHelper {
 	GecimeLyricHelper gecimeLyricHelper;
 	BaiduLyricHelper baiduLyricHelper;
 	LyricwikiLyricHelper lyricwikiLyricHelper;
-	
+
+	boolean baidu, gecimi, lyricwiki;
+
 	private static LyricHelper instance = null;
 
 	public static LyricHelper getInstance() {
@@ -15,7 +17,7 @@ public class LyricHelper {
 		}
 		return instance;
 	}
-	
+
 	private LyricHelper() {
 		gecimeLyricHelper = GecimeLyricHelper.getInstance();
 		baiduLyricHelper = BaiduLyricHelper.getInstance();
@@ -40,39 +42,47 @@ public class LyricHelper {
 				}
 			}
 
-			// 使用歌曲名+歌手名来搜索
+			// 首先使用歌曲名+歌手名来搜索
 
-			// LyricWiki连接速度太慢，暂时弃用
-			// result = lyricwikiLyricHelper.getLyric(song);
-			
-			// gecime的lrc服务经常不可用，所以先去百度精确查找
+			// gecime的lrc服务经常不可用，所以百度优先级更高
 			if (result == null) {
-				result = baiduLyricHelper.getLyric(song, true, 3);
+				if (baidu)
+					result = baiduLyricHelper.getLyric(song, true, true);
 			}
 			if (result == null) {
-				result = gecimeLyricHelper.getLyric(song, true);
+				if (gecimi)
+					result = gecimeLyricHelper.getLyric(song, true);
+			}
+			// LyricWiki连接速度较慢，不建议使用
+			if (result == null) {
+				if (lyricwiki)
+					result = lyricwikiLyricHelper.getLyric(song);
 			}
 
 			// 如果没找到，则尝试单独使用歌曲名来搜索
 			if (result == null) {
-				result = baiduLyricHelper.getLyric(song, false, 3);
+				if (baidu)
+					result = baiduLyricHelper.getLyric(song, false, true);
 			}
 			if (result == null) {
-				result = gecimeLyricHelper.getLyric(song, false);
+				if (gecimi)
+					result = gecimeLyricHelper.getLyric(song, false);
 			}
 
-			// 如果仍然没有找到，则放宽条件，只在百度音乐搜索并匹配歌名，
-			if (result == null) {
-				result = baiduLyricHelper.getLyric(song, false, 2);
-			}
-
-			// 如果仍然没有找到，则直接取回百度音乐的第一条结果
-			if (result == null) {
-				result = baiduLyricHelper.getLyric(song, false, 1);
-			}
 		} while (result == null && song.hasModifyTitleMethod());
+
+		// 如果仍然没有找到，则直接取回百度音乐的第一条结果
+		if (result == null) {
+			if (baidu)
+				result = baiduLyricHelper.getLyric(song, false, false);
+		}
 
 		return result;
 	}
 
+	public void setLyricSites(boolean baidu, boolean gecimi, boolean lyricwiki) {
+		this.baidu = baidu;
+		this.gecimi = gecimi;
+		this.lyricwiki = lyricwiki;
+	}
 }

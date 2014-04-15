@@ -30,7 +30,7 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 	 *            歌曲
 	 * @return 歌词
 	 */
-	private ArrayList<String> getLyric(Song song) {
+	public ArrayList<String> getLyric(Song song) {
 		String urlString = urlStringBase + "&artist=" + song.artist + "&song=" + song.title;
 		String htmlString = getHTMLFromURL(urlString);
 		if (htmlString == null) {

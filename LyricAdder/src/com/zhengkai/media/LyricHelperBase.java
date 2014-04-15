@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -35,6 +36,9 @@ public abstract class LyricHelperBase {
 				inStream = connection.getInputStream();
 			} catch (SocketTimeoutException e) {
 				System.out.println("Time out!!!");
+				return null;
+			} catch (UnknownHostException e) {
+				System.out.println("Service not available!!!");
 				return null;
 			}
 			Scanner in = new Scanner(inStream);

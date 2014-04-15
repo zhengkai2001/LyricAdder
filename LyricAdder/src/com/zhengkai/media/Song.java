@@ -12,9 +12,12 @@ import org.jaudiotagger.tag.KeyNotFoundException;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagException;
 import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
+import org.jaudiotagger.tag.id3.AbstractTag;
+import org.jaudiotagger.tag.id3.ID3v24Tag;
 
 public class Song extends MusicObject {
 	private MP3File mp3File;
+	boolean hasTagOriginally;
 	private Tag tag;
 
 	private int modifyTitleMethod;
@@ -34,21 +37,41 @@ public class Song extends MusicObject {
 		modifyTitleMethod = 0;
 		try {
 			this.mp3File = new MP3File(this.filePath);
-			this.tag = mp3File.getTag();
+			AbstractTag originalTag = (AbstractTag) mp3File.getTag();
 
-			this.artist = getArtistFromTag().toLowerCase();
-			this.title = getTitleFromTag().toLowerCase();
+			if (originalTag == null) {
+				hasTagOriginally = false;
+				System.out.println("no tag " + this.fileFullName);
+				
+				mp3File.setTag(new ID3v24Tag());
+				mp3File.save();
+				
+				this.tag = mp3File.getTag();
+			} else {
+				hasTagOriginally = true;
+//				System.out.println("has tag");
+				
+				this.tag = mp3File.getTag();
+				this.artist = getArtistFromTag().toLowerCase();
+				this.title = getTitleFromTag().toLowerCase();
+			}
 		} catch (IOException | TagException | ReadOnlyFileException | InvalidAudioFrameException e) {
 			e.printStackTrace();
 		}
 	}
 
 	protected String getArtistFromTag() {
-		return this.tag.getFirst(FieldKey.ARTIST);
+		if (this.tag != null && this.tag.hasField(FieldKey.ARTIST)) {
+			return this.tag.getFirst(FieldKey.ARTIST);
+		}
+		return "";
 	}
 
 	protected String getTitleFromTag() {
-		return tag.getFirst(FieldKey.TITLE);
+		if (this.tag != null && this.tag.hasField(FieldKey.TITLE)) {
+			return this.tag.getFirst(FieldKey.TITLE);
+		}
+		return "";
 	}
 
 	public void removeTag() {
@@ -61,19 +84,20 @@ public class Song extends MusicObject {
 	}
 
 	public void outputTag() {
-		Tag tag = this.mp3File.getTag();
+		if (this.tag != null) {
 
-		// System.out.println(tag.toString());
+			// System.out.println(tag.toString());
 
-		System.out.println(tag.getFirst(FieldKey.ARTIST));
-		System.out.println(tag.getFirst(FieldKey.ALBUM));
-		System.out.println(tag.getFirst(FieldKey.TITLE));
-		System.out.println(tag.getFirst(FieldKey.COMMENT));
-		System.out.println(tag.getFirst(FieldKey.YEAR));
-		System.out.println(tag.getFirst(FieldKey.TRACK));
-		System.out.println(tag.getFirst(FieldKey.DISC_NO));
-		System.out.println(tag.getFirst(FieldKey.COMPOSER));
-		System.out.println(tag.getFirst(FieldKey.ARTIST_SORT));
+			System.out.println(tag.getFirst(FieldKey.ARTIST));
+			System.out.println(tag.getFirst(FieldKey.ALBUM));
+			System.out.println(tag.getFirst(FieldKey.TITLE));
+			System.out.println(tag.getFirst(FieldKey.COMMENT));
+			System.out.println(tag.getFirst(FieldKey.YEAR));
+			System.out.println(tag.getFirst(FieldKey.TRACK));
+			System.out.println(tag.getFirst(FieldKey.DISC_NO));
+			System.out.println(tag.getFirst(FieldKey.COMPOSER));
+			System.out.println(tag.getFirst(FieldKey.ARTIST_SORT));
+		}
 	}
 
 	public void setLyric(Lyric lyric) {
@@ -90,7 +114,9 @@ public class Song extends MusicObject {
 	}
 
 	public void outputLyric() {
-		System.out.println(this.tag.getFirst(FieldKey.LYRICS));
+		if (this.tag != null && this.tag.hasField(FieldKey.LYRICS)) {
+			System.out.println(this.tag.getFirst(FieldKey.LYRICS));
+		}
 	}
 
 	public void outputInfo() {

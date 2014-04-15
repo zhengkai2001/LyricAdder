@@ -48,7 +48,7 @@ public class MusicObject {
 
 	protected String getArtist() {
 		int dash = this.fileName.indexOf('-');
-		if (dash == -1) {
+		if (dash <= 0) {
 			return null;
 		} else {
 			return this.fileName.substring(0, dash - 1).trim();

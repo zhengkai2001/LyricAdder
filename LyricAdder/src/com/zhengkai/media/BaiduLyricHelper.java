@@ -16,9 +16,9 @@ import org.json.JSONObject;
 public class BaiduLyricHelper extends LyricHelperBase {
 	private final static String urlStringBase = "http://music.baidu.com/search/lrc?key=";
 	private final static String urlStringBase_lrc = "http://music.baidu.com";
-	
+
 	private static BaiduLyricHelper instance = new BaiduLyricHelper();
-	
+
 	public static BaiduLyricHelper getInstance() {
 		return instance;
 	}
@@ -38,7 +38,7 @@ public class BaiduLyricHelper extends LyricHelperBase {
 	 * @return 歌词
 	 */
 
-	protected ArrayList<String> getLyric(Song song, boolean searchArtist, int strictLevel) {
+	protected ArrayList<String> getLyric(Song song, boolean searchArtist, boolean strict) {
 		try {
 			String urlString = null;
 			if (searchArtist) {
@@ -79,8 +79,8 @@ public class BaiduLyricHelper extends LyricHelperBase {
 				// title="歌曲名"> ......
 				String title = null;
 				songNodeParser = new Parser(songNode.toHtml());
-				AndFilter titleFilter = new AndFilter(new TagNameFilter("span"),
-						new HasAttributeFilter("class", "song-title"));
+				AndFilter titleFilter = new AndFilter(new TagNameFilter("span"), new HasAttributeFilter(
+						"class", "song-title"));
 				Node titleNodeParent = songNodeParser.parse(titleFilter).elementAt(0);
 				TagNode titleNode = (TagNode) titleNodeParent.getChildren().elementAt(1);
 				title = titleNode.getAttribute("title");
@@ -98,15 +98,11 @@ public class BaiduLyricHelper extends LyricHelperBase {
 				// System.out.println(artist);
 
 				boolean found = false;
-				if (strictLevel == 3) {
-					if (matched(song, title, artist)) {
+				if (strict) {
+					if (matched(song, title, artist) || matched(song, title)) {
 						found = true;
 					}
-				} else if (strictLevel == 2) {
-					if (matched(song, title)) {
-						found = true;
-					}
-				} else if (strictLevel == 1) {
+				} else {
 					found = true;
 				}
 
@@ -143,8 +139,8 @@ public class BaiduLyricHelper extends LyricHelperBase {
 
 									int openingBrace = downloadClass.indexOf('{');
 									int closingQuote = downloadClass.lastIndexOf('}');
-									String href = downloadClass.substring(openingBrace,
-											closingQuote + 1);
+									String href = downloadClass
+											.substring(openingBrace, closingQuote + 1);
 									// System.out.println(href);
 
 									JSONObject jsonObject = new JSONObject(href);

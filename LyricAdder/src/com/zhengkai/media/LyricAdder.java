@@ -1,14 +1,27 @@
 package com.zhengkai.media;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
-public class LyricAdder {
+public class LyricAdder extends Thread {
+	protected final static String encoding = "UTF-8";
+
 	private String musicDirectory;
 	private String lyricDirectory;
 
 	private ArrayList<MusicObject> songs;
 	private ArrayList<MusicObject> lyrics;
+
+	@SuppressWarnings("rawtypes")
+	private HashMap<String, Class> map;
+
+	private boolean useLocalLyric;
 
 	LyricHelper lyricHelper;
 
@@ -17,10 +30,13 @@ public class LyricAdder {
 	 */
 	public void addLyrics() {
 		travel(songs, musicDirectory, "mp3");
-		travel(lyrics, lyricDirectory, "lrc");
 
-		// addLyricLocal();
-		addLyricsFromInternet();
+		if (useLocalLyric) {
+			travel(lyrics, lyricDirectory, "lrc");
+			addLyricsLocal();
+		} else {
+			addLyricsFromInternet();
+		}
 	}
 
 	/**
@@ -42,6 +58,7 @@ public class LyricAdder {
 			}
 
 			System.out.println();
+			System.out.flush();
 		}
 	}
 
@@ -67,10 +84,11 @@ public class LyricAdder {
 	 *            指定的扩展名
 	 */
 	private void travel(ArrayList<MusicObject> mol, String path, String extensionName) {
+		System.out.println(path);
 		File dir = new File(path);
 		File[] files = dir.listFiles();
 
-		if (files == null) {
+		if (!dir.exists() || files == null || files.length == 0) {
 			return;
 		}
 
@@ -91,55 +109,59 @@ public class LyricAdder {
 		}
 	}
 
-//	/**
-//	 * 在本地搜索歌词文件，并添加到歌曲中
-//	 */
-//	private void addLyricLocal() {
-//		for (int i = 0; i != songs.size(); i++) {
-//			Song song = (Song) songs.get(i);
-//			System.out.println("i = " + i + " " + song.title + " " + song.filePath);
-//			// song.renameFileUsingTitleInTag();
-//			// song.outputTag();
-//
-//			for (int j = 0; j != lyrics.size(); j++) {
-//				// System.out.println("j = " + j);
-//				Lyric lyric = (Lyric) lyrics.get(j);
-//
-//				if (matched(song, lyric)) {
-//					System.out.println("local: found!");
-//					song.setLyric(lyric);
-//					break;
-//				}
-//			}
-//		}
-//	}
-//
-//	/**
-//	 * 将数字形式的ASCII码字符串（如"&#73;&#46;&#32;&#84;&#79;）转化为字符串
-//	 * 
-//	 * @param input
-//	 *            数字形式的ASCII码字符串
-//	 * @return 字符串
-//	 */
-//	private String transform(String input) {
-//		// String[] input = new String[] {
-//		// "&#73;&#46;&#32;&#84;&#79;&#71;&#69;&#84;&#72;&#69;&#82;&#78;&#69;&#83;&#83;",
-//		// "&#40;&#73;&#110;&#115;&#116;&#114;&#117;&#109;&#101;&#110;&#116;&#97;&#108;&#41;",
-//		// "&#73;&#73;&#46;&#32;&#67;&#82;&#79;&#83;&#83;&#70;&#73;&#82;&#69;",
-//		// "&#74;&#117;&#108;&#105;&#101;&#39;&#115;&#32;&#115;&#105;&#99;&#107;&#32;&#97;&#110;&#100;&#32;&#116;&#105;&#114;&#101;&#100;&#32;&#111;&#102;&#32;&#104;&#101;&#114;&#32;&#106;&#111;&#98;&#32;&#110;&#39;&#97;&#108;&#108;&#32;&#116;&#104;&#101;&#32;&#114;&#101;&#97;&#115;&#111;&#110;&#115;&#32;&#108;&#97;&#116;&#101;&#108;&#121;"};
-//
-//		StringBuilder result = new StringBuilder();
-//		String[] token = input.split(";");
-//		for (String string : token) {
-//			// System.out.println(string);
-//			string = string.replaceAll("&#", "");
-//			char c = (char) Integer.parseInt(string);
-//			System.out.print(c);
-//
-//			result.append(c);
-//		}
-//		return result.toString();
-//	}
+	/**
+	 * 在本地搜索歌词文件，并添加到歌曲中
+	 */
+	private void addLyricsLocal() {
+		for (int i = 0; i != songs.size(); i++) {
+			Song song = (Song) songs.get(i);
+			System.out.println("i = " + i + " " + song.title + " " + song.filePath);
+			// song.renameFileUsingTitleInTag();
+			// song.outputTag();
+
+			for (int j = 0; j != lyrics.size(); j++) {
+				// System.out.println("j = " + j);
+				Lyric lyric = (Lyric) lyrics.get(j);
+
+				if (matched(song, lyric)) {
+					System.out.println("local: found!");
+					song.setLyric(lyric);
+					break;
+				}
+			}
+		}
+	}
+
+	//
+	// /**
+	// * 将数字形式的ASCII码字符串（如"&#73;&#46;&#32;&#84;&#79;）转化为字符串
+	// *
+	// * @param input
+	// * 数字形式的ASCII码字符串
+	// * @return 字符串
+	// */
+	// private String transform(String input) {
+	// // String[] input = new String[] {
+	// //
+	// "&#73;&#46;&#32;&#84;&#79;&#71;&#69;&#84;&#72;&#69;&#82;&#78;&#69;&#83;&#83;",
+	// //
+	// "&#40;&#73;&#110;&#115;&#116;&#114;&#117;&#109;&#101;&#110;&#116;&#97;&#108;&#41;",
+	// // "&#73;&#73;&#46;&#32;&#67;&#82;&#79;&#83;&#83;&#70;&#73;&#82;&#69;",
+	// //
+	// "&#74;&#117;&#108;&#105;&#101;&#39;&#115;&#32;&#115;&#105;&#99;&#107;&#32;&#97;&#110;&#100;&#32;&#116;&#105;&#114;&#101;&#100;&#32;&#111;&#102;&#32;&#104;&#101;&#114;&#32;&#106;&#111;&#98;&#32;&#110;&#39;&#97;&#108;&#108;&#32;&#116;&#104;&#101;&#32;&#114;&#101;&#97;&#115;&#111;&#110;&#115;&#32;&#108;&#97;&#116;&#101;&#108;&#121;"};
+	//
+	// StringBuilder result = new StringBuilder();
+	// String[] token = input.split(";");
+	// for (String string : token) {
+	// // System.out.println(string);
+	// string = string.replaceAll("&#", "");
+	// char c = (char) Integer.parseInt(string);
+	// System.out.print(c);
+	//
+	// result.append(c);
+	// }
+	// return result.toString();
+	// }
 
 	/**
 	 * 判定歌曲与歌词是否匹配
@@ -188,12 +210,33 @@ public class LyricAdder {
 	 *            指定的歌词文件目录
 	 */
 	public LyricAdder(String musicdirectory, String lyricdirectory) {
-		this.musicDirectory = musicdirectory;
+		this(musicdirectory);
 		this.lyricDirectory = lyricdirectory;
-
-		songs = new ArrayList<MusicObject>();
 		lyrics = new ArrayList<MusicObject>();
+		map.put("lrc", Lyric.class);
+		useLocalLyric = true;
+	}
 
+	public LyricAdder(String musicdirectory) {
+		this();
+		this.musicDirectory = musicdirectory;
+		songs = new ArrayList<MusicObject>();
+		map.put("mp3", Song.class);
+		useLocalLyric = false;
+	}
+
+	@SuppressWarnings("rawtypes")
+	public LyricAdder() {
+		map = new HashMap<String, Class>();
 		lyricHelper = LyricHelper.getInstance();
+	}
+
+	@Override
+	public void run() {
+		addLyrics();
+	}
+
+	public void setLyricSites(boolean baidu, boolean gecimi, boolean lyricwiki) {
+		lyricHelper.setLyricSites(baidu, gecimi, lyricwiki);
 	}
 }
