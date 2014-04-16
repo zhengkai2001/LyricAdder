@@ -29,8 +29,7 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 	}
 
 	/**
-	 * 未完成，从歌词页面提取歌词还没写 从LyricWiki网站上获取歌词
-	 * （http://api.wikia.com/wiki/LyricWiki_API/REST）
+	 * 未完成，从歌词页面提取歌词还没写 从LyricWiki网站上获取歌词 （http://api.wikia.com/wiki/LyricWiki_API/REST）
 	 * 
 	 * @param song
 	 *        歌曲
@@ -48,16 +47,16 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 
 			parser = new Parser(htmlString);
 			TagNameFilter preFilter = new TagNameFilter("pre");
-			String pre = parser.extractAllNodesThatMatch(preFilter).elementAt(0).getNextSibling()
-					.getText().trim();
+			String pre = parser.extractAllNodesThatMatch(preFilter).elementAt(0)
+					.getNextSibling().getText().trim();
 			// System.out.println(pre);
 
 			if (pre.equals("Not found")) {
 				return null;
 			} else {
 				parser = new Parser(htmlString);
-				AndFilter urlFilter = new AndFilter(new TagNameFilter("a"), new HasAttributeFilter(
-						"title", "url"));
+				AndFilter urlFilter = new AndFilter(new TagNameFilter("a"),
+						new HasAttributeFilter("title", "url"));
 
 				TagNode lyricNode = (TagNode) parser.parse(urlFilter).elementAt(0);
 				String href = lyricNode.getAttribute("href");
@@ -72,11 +71,13 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 				parser = new Parser("D:\\zhengkai\\Desktop\\1.txt");
 				AndFilter lyricboxFilter = new AndFilter(new TagNameFilter("div"),
 						new HasAttributeFilter("class", "lyricbox"));
-				NodeList lyricboxNodeList = parser.parse(lyricboxFilter).elementAt(0).getChildren();
+				NodeList lyricboxNodeList = parser.parse(lyricboxFilter).elementAt(0)
+						.getChildren();
 				// System.out.println(lyricboxNodeList.toHtml());
 
 				for (int i = 0; i != lyricboxNodeList.size(); i++) {
-					System.out.println("i = " + i + ": " + lyricboxNodeList.elementAt(i).toHtml());
+					System.out.println("i = " + i + ": "
+							+ lyricboxNodeList.elementAt(i).toHtml());
 				}
 
 				// <div class="rtMatcher">

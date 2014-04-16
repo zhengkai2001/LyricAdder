@@ -81,7 +81,8 @@ public abstract class LyricHelperBase {
 			if (inputStream == null) {
 				return null;
 			} else {
-				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, encoding));
+				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream,
+						encoding));
 
 				// 开始下载歌词
 				String line;
@@ -127,12 +128,12 @@ public abstract class LyricHelperBase {
 		} else {
 			return (song.title.contains(title.toLowerCase()) && song.artist.contains(artist
 					.toLowerCase()))
-					|| (title.toLowerCase().contains(song.title) && song.artist.contains(artist
-							.toLowerCase()))
-					|| (title.toLowerCase().contains(song.title) && artist.toLowerCase().contains(
-							song.artist))
-					|| (song.title.contains(title.toLowerCase()) && artist.toLowerCase().contains(
-							song.artist));
+					|| (title.toLowerCase().contains(song.title) && song.artist
+							.contains(artist.toLowerCase()))
+					|| (title.toLowerCase().contains(song.title) && artist.toLowerCase()
+							.contains(song.artist))
+					|| (song.title.contains(title.toLowerCase()) && artist.toLowerCase()
+							.contains(song.artist));
 		}
 	}
 
@@ -146,7 +147,8 @@ public abstract class LyricHelperBase {
 	 * @return 是否匹配
 	 */
 	protected boolean matched(Song song, String title) {
-		return (song.title.contains(title.toLowerCase())) || (title.toLowerCase().contains(song.title));
+		return (song.title.contains(title.toLowerCase()))
+				|| (title.toLowerCase().contains(song.title));
 	}
 
 }

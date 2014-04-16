@@ -35,10 +35,10 @@ class URLLabel extends JLabel {
 	 */
 	public URLLabel(String text, String urlText) {
 		super("<html><u>" + text + "</u></html>");
-		if (!urlText.startsWith("http://")) {
-			this.urlText = "http://" + urlText;
-		} else {
+		if (urlText.startsWith("http://") || urlText.startsWith("https://")) {
 			this.urlText = urlText;
+		} else {
+			this.urlText = "http://" + urlText;
 		}
 		normalColor = URLLabel.this.getForeground();
 

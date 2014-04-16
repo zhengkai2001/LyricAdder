@@ -29,6 +29,7 @@ import javax.swing.plaf.FontUIResource;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Enumeration;
 
 import javax.swing.JTextPane;
@@ -46,19 +47,27 @@ public class LyricSystem {
 	private final static Font yahei = new Font("微软雅黑", Font.PLAIN, 12);
 	private final static String version = "0.1";
 
+	private final static String[] helpStrings = {
+			"使用说明：", "本软件会将指定目录下的所有音乐文件自动添加歌词，添加后的歌词可以在 iOS 的自带音乐 app 中显示。",
+			" - 目前仅支持 .mp3 和 .m4a 文件，请确保歌曲都包含正确的标签（歌名、艺术家）",
+			" - 歌词来源于各个网站，本软件无法保证为所有歌曲都添加上正确的歌词", " - 歌词站点推荐仅使用百度音乐，歌词迷的下载服务经常不可用",
+			" - 由于歌词站点的网页随时可能发生变化，因此本软件"};
+
 	private static String musicDirectory = "D:\\Music1";
 	// private static String lyricDir = "C:\\Lyrics\\";
 
 	private JFrame frame;
-	private JTextField label_musicPath;
+	private JTextField textField_musicPath;
 	private JScrollPane scrollPane;
 	private JTextPane textPane;
+	private GUIPrintStream guiPrintStream;
 	private JCheckBox checkBox_log, checkBox_baidu, checkBox_gecimi, checkBox_lyricwiki;
-	private JButton button_pause;
+	private JButton button_browse, button_start, button_pause, button_stop;
 
-	private boolean pause;
+	private boolean started;
+	private boolean paused;
 
-	LyricAdder lyricAdder;
+	private LyricAdder lyricAdder;
 
 	/**
 	 * Launch the application.
@@ -82,8 +91,7 @@ public class LyricSystem {
 	public LyricSystem() {
 		initialize();
 		setLookAndFeel();
-
-		pause = false;
+		setComponentsDefault();
 	}
 
 	private void setLookAndFeel() {
@@ -164,54 +172,49 @@ public class LyricSystem {
 		label_setMusicPath.setBounds(10, 10, 100, 15);
 		frame.getContentPane().add(label_setMusicPath);
 
-		label_musicPath = new JTextField();
-		label_musicPath.setText(musicDirectory);
-		label_musicPath.setBounds(10, 35, 389, 21);
-		frame.getContentPane().add(label_musicPath);
-		label_musicPath.setColumns(10);
-		label_musicPath.setPreferredSize(new Dimension(100, 20));
+		textField_musicPath = new JTextField();
+		textField_musicPath.setText(musicDirectory);
+		textField_musicPath.setBounds(10, 35, 389, 21);
+		frame.getContentPane().add(textField_musicPath);
+		textField_musicPath.setColumns(10);
+		textField_musicPath.setPreferredSize(new Dimension(100, 20));
 
-		JButton button = new JButton("浏览...");
-		button.addActionListener(new ActionListener() {
+		button_browse = new JButton("浏览...");
+		button_browse.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				setMusicPath();
 			}
 		});
-		button.setBounds(409, 34, 75, 23);
-		frame.getContentPane().add(button);
+		button_browse.setBounds(409, 34, 75, 23);
+		frame.getContentPane().add(button_browse);
 
 		checkBox_log = new JCheckBox("保存log");
 		checkBox_log.setBounds(213, 76, 80, 23);
 		checkBox_log.setSelected(false);
 		frame.getContentPane().add(checkBox_log);
 
-		JButton button_start = new JButton("开始添加歌词！");
+		button_start = new JButton("开始添加歌词！");
 		button_start.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				startAdding();
+				start();
 			}
 		});
-		button_start.setBounds(299, 66, 185, 36);
+		button_start.setBounds(299, 66, 185, 35);
 		frame.getContentPane().add(button_start);
 
 		button_pause = new JButton("暂停");
 		button_pause.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (lyricAdder != null) {
-					pauseOrResume();
-				}
+				pauseOrResume();
 			}
 		});
 		button_pause.setBounds(299, 112, 75, 23);
 		frame.getContentPane().add(button_pause);
 
-		JButton button_stop = new JButton("停止");
+		button_stop = new JButton("停止");
 		button_stop.addActionListener(new ActionListener() {
-			@SuppressWarnings("deprecation")
 			public void actionPerformed(ActionEvent e) {
-				if (lyricAdder != null) {
-					lyricAdder.stop();
-				}
+				stop();
 			}
 		});
 		button_stop.setBounds(409, 112, 75, 23);
@@ -225,6 +228,29 @@ public class LyricSystem {
 		scrollPane.setViewportView(textPane);
 		textPane.setEditable(false);
 		textPane.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+
+		guiPrintStream = new GUIPrintStream(System.out, textPane);
+		System.setOut(guiPrintStream);
+	}
+
+	private void setComponentsDefault() {
+		textField_musicPath.setEnabled(true);
+		button_browse.setEnabled(true);
+		button_start.setEnabled(true);
+		button_start.setText("开始");
+		button_pause.setText("暂停");
+		button_pause.setEnabled(false);
+		button_stop.setEnabled(false);
+	}
+
+	private void setComponentsRunning() {
+		textField_musicPath.setEnabled(false);
+		button_browse.setEnabled(false);
+		button_start.setEnabled(false);
+		button_start.setText("添加中……");
+		button_pause.setEnabled(true);
+		button_stop.setEnabled(true);
+		guiPrintStream.clear();
 	}
 
 	private void setMusicPath() {
@@ -235,63 +261,117 @@ public class LyricSystem {
 			File selectedFile = fileChooser.getSelectedFile();
 			if (selectedFile.exists()) {
 				musicDirectory = selectedFile.getAbsolutePath();
-				label_musicPath.setText(musicDirectory);
-			} else {
+				textField_musicPath.setText(musicDirectory);
 			}
 		}
 	}
 
-	private void startAdding() {
-		setOutput();
+	private void start() {
+		if (!started) {
+			started = true;
+			paused = false;
+			setComponentsRunning();
 
-		musicDirectory = label_musicPath.getText();
-		lyricAdder = new LyricAdder(musicDirectory);
+			startAdding();
+		}
+	}
+
+	private void startAdding() {
+		setLogOutput();
+
+		lyricAdder = new LyricAdder();
+
+		musicDirectory = textField_musicPath.getText();
+		lyricAdder.setMusicDirectory(musicDirectory);
 		lyricAdder.setLyricSites(checkBox_baidu.isSelected(), checkBox_gecimi.isSelected(),
 				checkBox_lyricwiki.isSelected());
+		lyricAdder.setUsingLocalLyric(false);
 		lyricAdder.start();
 	}
 
 	@SuppressWarnings("deprecation")
-	private void pauseOrResume() {
-		if (pause) {
-			button_pause.setText("暂停");
-			lyricAdder.resume();
-		} else {
-			button_pause.setText("恢复");
-			lyricAdder.suspend();
+	private void stop() {
+		if (started) {
+			if (lyricAdder != null && started) {
+				lyricAdder.stop();
+			}
+
+			started = false;
+			paused = false;
+			setComponentsDefault();
 		}
-		pause = !pause;
+	}
+
+	@SuppressWarnings("deprecation")
+	private void pauseOrResume() {
+		if (lyricAdder != null && started) {
+			if (paused) {
+				button_pause.setText("暂停");
+				lyricAdder.resume();
+			} else {
+				button_pause.setText("恢复");
+				lyricAdder.suspend();
+			}
+			paused = !paused;
+		}
 	}
 
 	/**
 	 * 显示使用帮助
 	 */
 	private void castHelp() {
-		// TODO 自动生成的方法存根
+		ArrayList<JLabel> labelList = new ArrayList<JLabel>();
 
+		JLabel helpLabel = new JLabel(generateLabString(helpStrings));
+		labelList.add(helpLabel);
+
+		// JLabel attentionLabel = new JLabel(generateLabString(attentionStrings));
+		// labelList.add(attentionLabel);
+
+		JPanel helpPanel = new JPanel();
+		helpPanel.setLayout(new GridLayout(labelList.size(), 1));
+		for (JLabel label : labelList) {
+			helpPanel.add(label);
+		}
+
+		JOptionPane.showMessageDialog(frame, helpPanel, "使用帮助", JOptionPane.QUESTION_MESSAGE);
+	}
+
+	private String generateLabString(String[] strings) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html>");
+
+		for (String string : strings) {
+			sb.append(string);
+			sb.append("<br>");
+		}
+
+		sb.append("</html>");
+		return sb.toString();
 	}
 
 	/**
 	 * 显示关于信息
 	 */
 	private void castAbout() {
-		URLLabel authorLabel = new URLLabel("作者: zk", "weibo.com/1267591671");
-		JLabel versionLabel = new JLabel("version: " + version);
-		URLLabel githubLabel = new URLLabel("github: https://github.com/zhengkai2001/LyricAdder",
-				"https://github.com/zhengkai2001/LyricAdder");
-
 		JPanel aboutPanel = new JPanel();
 		aboutPanel.setLayout(new GridLayout(3, 1));
+
+		URLLabel authorLabel = new URLLabel("作者: zk", "weibo.com/1267591671");
+		JLabel versionLabel = new JLabel("version: " + version);
+		URLLabel githubLabel = new URLLabel(
+				"github: https://github.com/zhengkai2001/LyricAdder",
+				"https://github.com/zhengkai2001/LyricAdder");
+
 		aboutPanel.add(authorLabel);
 		aboutPanel.add(versionLabel);
 		aboutPanel.add(githubLabel);
 
-		JOptionPane.showMessageDialog(frame, aboutPanel, "关于", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane
+				.showMessageDialog(frame, aboutPanel, "关于", JOptionPane.INFORMATION_MESSAGE);
 	}
 
-	private void setOutput() {
-		System.setOut(new GUIPrintStream(System.out, textPane));
-
+	private void setLogOutput() {
 		try {
 			if (checkBox_log.isSelected()) {
 				PrintStream out = new PrintStream("C:\\LyricAdderLog.txt");

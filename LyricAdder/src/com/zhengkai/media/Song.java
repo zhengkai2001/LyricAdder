@@ -25,23 +25,36 @@ import org.jaudiotagger.tag.id3.ID3v24Tag;
  * @date 2014年4月15日
  */
 public class Song extends MusicObject {
+	// 用于mp3文件
 	private MP3File mp3File;
+	// 用于mp4文件
 	private AudioFile audioFile;
-
+	// 歌曲的标签
 	private Tag tag;
 
+	// 当搜索不到歌词时，可能是由于歌名不标准，可以尝试修改歌名后再搜索
 	private int modifyTitleMethod;
 
+	// 歌曲的信息
 	public String album;
 	public int trackNo;
 	public int discNo;
 	public int year;
 	public String genre;
 
+	/**
+	 * 默认构造函数
+	 */
 	public Song() {
 		super();
 	}
 
+	/**
+	 * 通过指定的歌曲文件位置构造歌曲对象
+	 * 
+	 * @param filePath
+	 *        歌曲文件在硬盘中的位置
+	 */
 	public Song(String filePath) {
 		super(filePath);
 		try {
@@ -64,16 +77,33 @@ public class Song extends MusicObject {
 					this.tag = this.audioFile.getTag();
 				}
 			} else {
-				this.artist = getArtistFromTag().toLowerCase();
 				this.title = getTitleFromTag().toLowerCase();
+				this.artist = getArtistFromTag().toLowerCase();
 			}
-		} catch (IOException | TagException | ReadOnlyFileException | InvalidAudioFrameException
-				| CannotReadException | CannotWriteException e) {
+		} catch (IOException | TagException | ReadOnlyFileException
+				| InvalidAudioFrameException | CannotReadException | CannotWriteException e) {
 		}
 
 		modifyTitleMethod = 0;
 	}
 
+	/**
+	 * 从标签中获取歌名
+	 * 
+	 * @return 歌名
+	 */
+	protected String getTitleFromTag() {
+		if (this.tag != null && this.tag.hasField(FieldKey.TITLE)) {
+			return this.tag.getFirst(FieldKey.TITLE);
+		}
+		return "";
+	}
+
+	/**
+	 * 从标签中获取歌手名
+	 * 
+	 * @return 歌手名
+	 */
 	protected String getArtistFromTag() {
 		if (this.tag != null && this.tag.hasField(FieldKey.ARTIST)) {
 			return this.tag.getFirst(FieldKey.ARTIST);
@@ -81,20 +111,16 @@ public class Song extends MusicObject {
 		return "";
 	}
 
-	protected String getTitleFromTag() {
-		if (this.tag != null && this.tag.hasField(FieldKey.TITLE)) {
-			return this.tag.getFirst(FieldKey.TITLE);
-		}
-
-		return "";
-	}
-
+	/**
+	 * 从歌曲文件中移除标签
+	 */
 	public void removeTag() {
 		if (extensionName.equals(".mp3")) {
 			try {
 				AbstractID3v2Tag tag = this.mp3File.getID3v2Tag();
 				mp3File.delete(tag);
-			} catch (IOException e) {
+				mp3File.save();
+			} catch (IOException | TagException e) {
 				e.printStackTrace();
 			}
 		} else if (extensionName.equals(".m4a")) {
@@ -102,9 +128,11 @@ public class Song extends MusicObject {
 		}
 	}
 
+	/**
+	 * 输出标签中包含的信息
+	 */
 	public void outputTag() {
 		if (this.tag != null) {
-
 			// System.out.println(tag.toString());
 
 			System.out.println(tag.getFirst(FieldKey.ARTIST));
@@ -119,6 +147,12 @@ public class Song extends MusicObject {
 		}
 	}
 
+	/**
+	 * 根据指定的歌词对象，为歌曲添加歌词
+	 * 
+	 * @param lyric
+	 *        要添加的歌词对象
+	 */
 	public void setLyric(Lyric lyric) {
 		try {
 			String lyricString = lyric.getLyricString();
@@ -134,12 +168,18 @@ public class Song extends MusicObject {
 		}
 	}
 
+	/**
+	 * 输出歌词内容
+	 */
 	public void outputLyric() {
 		if (this.tag != null && this.tag.hasField(FieldKey.LYRICS)) {
 			System.out.println(this.tag.getFirst(FieldKey.LYRICS));
 		}
 	}
 
+	/**
+	 * 输出音乐文件头的内容
+	 */
 	public void outputInfo() {
 		if (extensionName.equals(".mp3")) {
 			MP3AudioHeader mp3AudioHeader = (MP3AudioHeader) this.mp3File.getAudioHeader();
@@ -153,21 +193,27 @@ public class Song extends MusicObject {
 		}
 	}
 
+	/**
+	 * 根据标签中的信息重命名文件
+	 */
 	public void renameFileUsingTitleInTag() {
-		String title = this.tag.getFirst(FieldKey.TITLE);
+		if (this.title != null) {
+			int slash = filePath.lastIndexOf('\\');
+			String newFilePath = filePath.substring(0, slash + 1) + title + extensionName;
 
-		int slash = filePath.lastIndexOf('\\');
-		String newFilePath = filePath.substring(0, slash + 1) + title + extensionName;
+			File file = new File(this.filePath);
+			File newFile = new File(newFilePath);
 
-		File file = new File(this.filePath);
-		File newFile = new File(newFilePath);
-
-		file.renameTo(newFile);
+			file.renameTo(newFile);
+		}
 	}
 
+	/**
+	 * 尝试修改歌名
+	 */
 	public void tryModifyTitle() {
 		if (modifyTitleMethod == 0) {
-			// 什么也不做
+			// 第一次，不修改，保持原歌名
 
 		} else if (modifyTitleMethod == 1) {
 			this.title = deleteSectionBetween(this.title, '(', ')');
@@ -179,6 +225,11 @@ public class Song extends MusicObject {
 		modifyTitleMethod++;
 	}
 
+	/**
+	 * 测试是否还有修改歌名的方法
+	 * 
+	 * @return 是否还有修改歌名的方法
+	 */
 	public boolean hasModifyTitleMethod() {
 		return (modifyTitleMethod <= 2);
 	}

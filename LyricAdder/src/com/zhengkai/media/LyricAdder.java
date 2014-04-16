@@ -21,23 +21,24 @@ public class LyricAdder extends Thread {
 	private ArrayList<MusicObject> lyrics;
 
 	private HashMap<String, String[]> extensionMap = new HashMap<String, String[]>();
-	private String[] musicFileExtensions = new String[] { ".mp3", ".m4a" };
-	private String[] lyricFileExtensions = new String[] { ".lrc", ".txt" };
+	private String[] musicFileExtensions = new String[] {
+			".mp3", ".m4a" };
+	private String[] lyricFileExtensions = new String[] {
+			".lrc", ".txt" };
 
 	@SuppressWarnings("rawtypes")
 	private HashMap<String, Class> classMap = new HashMap<String, Class>();
 
-	private boolean useLocalLyric;
+	private boolean usingLocalLyric;
 
-	LyricHelper lyricHelper;
+	private LyricHelper lyricHelper;
 
 	/**
 	 * 添加歌词
 	 */
 	public void addLyrics() {
 		travel(musicDirectory, "music");
-
-		if (useLocalLyric) {
+		if (usingLocalLyric) {
 			travel(lyricDirectory, "lyric");
 			addLyricsLocal();
 		} else {
@@ -51,8 +52,8 @@ public class LyricAdder extends Thread {
 	private void addLyricsFromInternet() {
 		for (int i = 0; i != songs.size(); i++) {
 			Song song = (Song) songs.get(i);
-			System.out.println("i = " + i + "  " + song.title + "  " + song.artist + "  "
-					+ song.filePath);
+			System.out.println("第" + (i + 1) + "首：" + song.title + " " + song.filePath);
+
 			// song.renameFileUsingTitleInTag();
 			// song.outputTag();
 
@@ -90,9 +91,7 @@ public class LyricAdder extends Thread {
 	 *        指定的文件类型
 	 */
 	private void travel(String path, String type) {
-		System.out.println(type);
 		ArrayList<MusicObject> mol = arrayListMap.get(type);
-		System.out.println(mol);
 		String[] extensions = extensionMap.get(type);
 		travel(mol, path, type, extensions);
 	}
@@ -109,8 +108,8 @@ public class LyricAdder extends Thread {
 	 * @param extensions
 	 *        指定的文件扩展名
 	 */
-	private void travel(ArrayList<MusicObject> mol, String path, String type, String[] extensions) {
-		System.out.println(path);
+	private void travel(ArrayList<MusicObject> mol, String path, String type,
+			String[] extensions) {
 		File dir = new File(path);
 		File[] files = dir.listFiles();
 
@@ -128,12 +127,14 @@ public class LyricAdder extends Thread {
 					if (absolutePath.endsWith(extension)) {
 
 						try {
-							@SuppressWarnings({ "rawtypes", "unchecked" })
-							Constructor constructor = classMap.get(type).getConstructor(String.class);
+							@SuppressWarnings({
+									"rawtypes", "unchecked" })
+							Constructor constructor = classMap.get(type).getConstructor(
+									String.class);
 							mol.add((MusicObject) constructor.newInstance(absolutePath));
-						} catch (NoSuchMethodException | SecurityException | InstantiationException
-								| IllegalAccessException | IllegalArgumentException
-								| InvocationTargetException e) {
+						} catch (NoSuchMethodException | SecurityException
+								| InstantiationException | IllegalAccessException
+								| IllegalArgumentException | InvocationTargetException e) {
 							e.printStackTrace();
 						}
 					}
@@ -148,7 +149,7 @@ public class LyricAdder extends Thread {
 	private void addLyricsLocal() {
 		for (int i = 0; i != songs.size(); i++) {
 			Song song = (Song) songs.get(i);
-			System.out.println("i = " + i + " " + song.title + " " + song.filePath);
+			System.out.println("第" + (i + 1) + "首：" + song.title + " " + song.filePath);
 			// song.renameFileUsingTitleInTag();
 			// song.outputTag();
 
@@ -175,34 +176,10 @@ public class LyricAdder extends Thread {
 	 * @return 是否匹配
 	 */
 	protected boolean matched(Song song, Lyric lyric) {
-		return (song.title.contains(lyric.title) && song.artist.contains(lyric.artist)
-				|| song.title.contains(lyric.title) && lyric.artist.contains(song.artist)
-				|| lyric.title.contains(song.title) && lyric.artist.contains(song.artist) || lyric.title
-				.contains(song.title) && song.artist.contains(lyric.artist));
-	}
-
-	/**
-	 * 构造函数
-	 * 
-	 * @param musicdirectory
-	 *        指定的音乐文件目录
-	 * @param lyricdirectory
-	 *        指定的歌词文件目录
-	 */
-	public LyricAdder(String musicdirectory, String lyricdirectory) {
-		this(musicdirectory);
-		this.lyricDirectory = lyricdirectory;
-		lyrics = new ArrayList<MusicObject>();
-		arrayListMap.put("lyric", lyrics);
-		useLocalLyric = true;
-	}
-
-	public LyricAdder(String musicdirectory) {
-		this();
-		this.musicDirectory = musicdirectory;
-		songs = new ArrayList<MusicObject>();
-		arrayListMap.put("music", songs);
-		useLocalLyric = false;
+		return ((song.title.contains(lyric.title) && song.artist.contains(lyric.artist))
+				|| (song.title.contains(lyric.title) && lyric.artist.contains(song.artist))
+				|| (lyric.title.contains(song.title) && lyric.artist.contains(song.artist)) || (lyric.title
+				.contains(song.title) && song.artist.contains(lyric.artist)));
 	}
 
 	public LyricAdder() {
@@ -213,6 +190,12 @@ public class LyricAdder extends Thread {
 
 		classMap.put("music", Song.class);
 		classMap.put("lyric", Lyric.class);
+
+		lyrics = new ArrayList<MusicObject>();
+		songs = new ArrayList<MusicObject>();
+
+		arrayListMap.put("lyric", lyrics);
+		arrayListMap.put("music", songs);
 	}
 
 	@Override
@@ -221,6 +204,18 @@ public class LyricAdder extends Thread {
 	}
 
 	public void setLyricSites(boolean baidu, boolean gecimi, boolean lyricwiki) {
-		lyricHelper.setLyricSites(baidu, gecimi, lyricwiki);
+		this.lyricHelper.setLyricSites(baidu, gecimi, lyricwiki);
+	}
+
+	public void setMusicDirectory(String musicDirectory) {
+		this.musicDirectory = musicDirectory;
+	}
+
+	public void setLyricDirectory(String lyricDirectory) {
+		this.lyricDirectory = lyricDirectory;
+	}
+
+	public void setUsingLocalLyric(boolean usingLocalLyric) {
+		this.usingLocalLyric = usingLocalLyric;
 	}
 }

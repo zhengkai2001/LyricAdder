@@ -31,4 +31,8 @@ public class GUIPrintStream extends PrintStream {
 			}
 		});
 	}
+
+	public void clear() {
+		sb = new StringBuffer();
+	}
 }

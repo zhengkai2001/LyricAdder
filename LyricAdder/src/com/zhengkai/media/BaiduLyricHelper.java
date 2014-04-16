@@ -85,12 +85,12 @@ public class BaiduLyricHelper extends LyricHelperBase {
 				// title="歌曲名"> ......
 				String title = null;
 				songNodeParser = new Parser(songNode.toHtml());
-				AndFilter titleFilter = new AndFilter(new TagNameFilter("span"), new HasAttributeFilter(
-						"class", "song-title"));
+				AndFilter titleFilter = new AndFilter(new TagNameFilter("span"),
+						new HasAttributeFilter("class", "song-title"));
 				Node titleNodeParent = songNodeParser.parse(titleFilter).elementAt(0);
 				TagNode titleNode = (TagNode) titleNodeParent.getChildren().elementAt(1);
 				title = titleNode.getAttribute("title");
-				System.out.println(title);
+				// System.out.println(title);
 
 				String artist = null;
 				// <span class="artist-title">歌手:<span class="author_list"
@@ -101,7 +101,7 @@ public class BaiduLyricHelper extends LyricHelperBase {
 				Node artistNodeParent = songNodeParser.parse(artistFilter).elementAt(0);
 				TagNode artistNode = (TagNode) artistNodeParent.getChildren().elementAt(1);
 				artist = artistNode.getAttribute("title");
-				System.out.println(artist);
+				// System.out.println(artist);
 
 				boolean found = false;
 				if (strict) {
@@ -120,7 +120,8 @@ public class BaiduLyricHelper extends LyricHelperBase {
 					songNodeParser = new Parser(songNode.toHtml());
 					AndFilter lyricFilter = new AndFilter(new TagNameFilter("span"),
 							new HasAttributeFilter("class", "lyric-action"));
-					Node lyricNodeParent = (Span) songNodeParser.parse(lyricFilter).elementAt(0);
+					Node lyricNodeParent = (Span) songNodeParser.parse(lyricFilter).elementAt(
+							0);
 					if (lyricNodeParent == null) {
 						continue;
 					}
@@ -138,15 +139,16 @@ public class BaiduLyricHelper extends LyricHelperBase {
 							// class="down-lrc-btn { 'href':'/data2/lrc/12741704/12741704.lrc' }"
 							// href="#">下载LRC歌词</a>
 							for (int k = 0; k != lyricNodeChildren.size(); k++) {
-								if (lyricNodeChildren.elementAt(k).getText().contains("下载LRC歌词")) {
-									String downloadClass = ((TagNode) lyricNodeList.elementAt(j))
-											.getAttribute("class");
+								if (lyricNodeChildren.elementAt(k).getText()
+										.contains("下载LRC歌词")) {
+									String downloadClass = ((TagNode) lyricNodeList
+											.elementAt(j)).getAttribute("class");
 									// System.out.println(downloadClass);
 
 									int openingBrace = downloadClass.indexOf('{');
 									int closingQuote = downloadClass.lastIndexOf('}');
-									String href = downloadClass
-											.substring(openingBrace, closingQuote + 1);
+									String href = downloadClass.substring(openingBrace,
+											closingQuote + 1);
 									// System.out.println(href);
 
 									JSONObject jsonObject = new JSONObject(href);
