@@ -2,16 +2,15 @@ package com.zhengkai.media;
 
 import java.util.ArrayList;
 
-import org.htmlparser.Parser;
-import org.htmlparser.filters.AndFilter;
-import org.htmlparser.filters.HasAttributeFilter;
-import org.htmlparser.filters.TagNameFilter;
-import org.htmlparser.nodes.TagNode;
-import org.htmlparser.util.NodeList;
-import org.htmlparser.util.ParserException;
+import org.htmlcleaner.CleanerProperties;
+import org.htmlcleaner.CompactHtmlSerializer;
+import org.htmlcleaner.HtmlCleaner;
+import org.htmlcleaner.TagNode;
+import org.htmlcleaner.XPatherException;
 
 /**
  * 从lyricwiki网站下载歌词
+ * http://api.wikia.com/wiki/LyricWiki_API
  * 
  * @author zhengkai
  * @date 2014年4月15日
@@ -29,7 +28,7 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 	}
 
 	/**
-	 * 未完成，从歌词页面提取歌词还没写 从LyricWiki网站上获取歌词 （http://api.wikia.com/wiki/LyricWiki_API/REST）
+	 * 从LyricWiki获取歌词
 	 * 
 	 * @param song
 	 *        歌曲
@@ -37,63 +36,92 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 	 */
 	public ArrayList<String> getLyric(Song song) {
 		String urlString = urlStringBase + "&artist=" + song.artist + "&song=" + song.title;
-		String htmlString = getHTMLFromURL(urlString);
-		if (htmlString == null) {
+
+		try {
+			String htmlContent = null;
+			TagNode node = null;
+			Object[] anchors = null;
+			Object anchor = null;
+
+			HtmlCleaner cleaner = new HtmlCleaner();
+
+			htmlContent = getHTMLFromURL(urlString);
+			if (htmlContent == null) {
+				return null;
+			}
+			node = cleaner.clean(htmlContent);
+
+			// <ul>
+			// <a href="http://lyrics.wikia.com/Cake:Dime"
+			// title="url">http://lyrics.wikia.com/Cake:Dime</a>
+			// <li></li>
+			// <li></li>
+			// <li></li>
+			// </ul>
+
+			// 找到歌词网址
+			anchors = node.evaluateXPath("//ul/a[@title='url']");
+			if (anchors == null || anchors.length == 0) {
+				return null;
+			}
+			anchor = anchors[0];
+			String href = ((TagNode) anchor).getText().toString();
+
+			htmlContent = getHTMLFromURL(href);
+			if (htmlContent == null) {
+				return null;
+			}
+			node = cleaner.clean(htmlContent);
+
+			// <div class="lyricbox">
+			// <div><a></a><span></span></div>
+			// Memories, how they fade so fast<br>Look back, that is no escape<br>
+			// </div>
+
+			// 提取歌词
+			anchors = node.evaluateXPath("//div[@class='lyricbox']");
+			if (anchors == null || anchors.length == 0) {
+				return null;
+			}
+			anchor = anchors[0];
+
+			CompactHtmlSerializer chs = new CompactHtmlSerializer(new CleanerProperties());
+			String rawLyricDivString = chs.getAsString((TagNode) anchor);
+			return getLyricFromRaw(rawLyricDivString);
+		} catch (XPatherException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private ArrayList<String> getLyricFromRaw(String lyricString) {
+		// 提取出歌词文本
+		String beginString = "<span class=\"adNotice\">Ad</span></div>";
+		String endString = "<!--";
+		int begin = lyricString.indexOf(beginString);
+		int end = lyricString.lastIndexOf(endString);
+
+		if (begin != -1 && end != lyricString.length() && begin + beginString.length() < end) {
+			lyricString = lyricString.substring(begin + beginString.length(), end);
+		} else {
 			return null;
 		}
 
-		try {
-			Parser parser;
+		// 将 &apos; 转换为 '
+		lyricString = lyricString.replaceAll("&apos;", "'");
 
-			parser = new Parser(htmlString);
-			TagNameFilter preFilter = new TagNameFilter("pre");
-			String pre = parser.extractAllNodesThatMatch(preFilter).elementAt(0)
-					.getNextSibling().getText().trim();
-			// System.out.println(pre);
-
-			if (pre.equals("Not found")) {
-				return null;
-			} else {
-				parser = new Parser(htmlString);
-				AndFilter urlFilter = new AndFilter(new TagNameFilter("a"),
-						new HasAttributeFilter("title", "url"));
-
-				TagNode lyricNode = (TagNode) parser.parse(urlFilter).elementAt(0);
-				String href = lyricNode.getAttribute("href");
-
-				htmlString = getHTMLFromURL(href);
-				if (htmlString == null) {
-					return null;
-				}
-				System.out.println(htmlString);
-
-				// <div class='lyricbox'>
-				parser = new Parser("D:\\zhengkai\\Desktop\\1.txt");
-				AndFilter lyricboxFilter = new AndFilter(new TagNameFilter("div"),
-						new HasAttributeFilter("class", "lyricbox"));
-				NodeList lyricboxNodeList = parser.parse(lyricboxFilter).elementAt(0)
-						.getChildren();
-				// System.out.println(lyricboxNodeList.toHtml());
-
-				for (int i = 0; i != lyricboxNodeList.size(); i++) {
-					System.out.println("i = " + i + ": "
-							+ lyricboxNodeList.elementAt(i).toHtml());
-				}
-
-				// <div class="rtMatcher">
-
-				ArrayList<String> result = null;
-				// if (result != null) {
-				// }
-
-				return result;
-
-			}
-
-		} catch (ParserException e) {
-			e.printStackTrace();
+		// 去除所有自然换行符
+		lyricString = lyricString.replaceAll("\n", "");
+		
+		// 以 <br /> 为换行符，建立歌词容器
+		//如果连续出现两个 <br />，说明此处需要空一行
+		lyricString = lyricString.replaceAll("<br /><br />", "\n<br />");
+		
+		String[] lines = lyricString.split("<br />");
+		ArrayList<String> result = new ArrayList<String>();
+		for (String line : lines) {
+			result.add(line);
 		}
-
-		return null;
+		return result;
 	}
 }

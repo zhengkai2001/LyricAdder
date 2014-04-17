@@ -1,6 +1,7 @@
 package com.zhengkai.media;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,6 +20,8 @@ import java.util.Scanner;
  */
 public abstract class LyricHelperBase {
 	protected final static String encoding = "UTF-8";
+	private final static int connectTimeout = 2000;
+	private final static int readTimeout = 5000;
 
 	protected static String urlStringBase;
 
@@ -33,16 +36,19 @@ public abstract class LyricHelperBase {
 			System.out.println(urlString);
 			URL requestURL = new URL(urlString);
 			URLConnection connection = requestURL.openConnection();
-			connection.setConnectTimeout(2000);
-			connection.setReadTimeout(5000);
+			connection.setConnectTimeout(connectTimeout);
+			connection.setReadTimeout(readTimeout);
 			InputStream inStream = null;
 			try {
 				inStream = connection.getInputStream();
 			} catch (SocketTimeoutException e) {
-				System.out.println("Time out!!!");
+				System.out.println("Timed out!!!");
 				return null;
 			} catch (UnknownHostException e) {
-				System.out.println("Service not available!!!");
+				System.out.println("Service unavailable!!!");
+				return null;
+			} catch (FileNotFoundException e) {
+				System.out.println("Tag Error!!!");
 				return null;
 			}
 			Scanner in = new Scanner(inStream);
@@ -51,7 +57,6 @@ public abstract class LyricHelperBase {
 			while (in.hasNextLine()) {
 				String string = in.nextLine();
 				stringBuilder.append(string);
-				// System.out.println(string);
 			}
 			in.close();
 			return stringBuilder.toString();
@@ -94,7 +99,6 @@ public abstract class LyricHelperBase {
 				return lyricLines;
 			}
 		} catch (IOException e) {
-			// e.printStackTrace();
 		}
 
 		return null;
@@ -126,14 +130,14 @@ public abstract class LyricHelperBase {
 		if (song.title == null || song.artist == null) {
 			return false;
 		} else {
-			return (song.title.contains(title.toLowerCase()) && song.artist.contains(artist
-					.toLowerCase()))
-					|| (title.toLowerCase().contains(song.title) && song.artist
+			return (song.titleLowerCase.contains(title.toLowerCase()) && song.artistLowerCase
+					.contains(artist.toLowerCase()))
+					|| (title.toLowerCase().contains(song.titleLowerCase) && song.artistLowerCase
 							.contains(artist.toLowerCase()))
-					|| (title.toLowerCase().contains(song.title) && artist.toLowerCase()
-							.contains(song.artist))
-					|| (song.title.contains(title.toLowerCase()) && artist.toLowerCase()
-							.contains(song.artist));
+					|| (title.toLowerCase().contains(song.titleLowerCase) && artist
+							.toLowerCase().contains(song.artistLowerCase))
+					|| (song.titleLowerCase.contains(title.toLowerCase()) && artist
+							.toLowerCase().contains(song.artistLowerCase));
 		}
 	}
 
@@ -147,8 +151,8 @@ public abstract class LyricHelperBase {
 	 * @return 是否匹配
 	 */
 	protected boolean matched(Song song, String title) {
-		return (song.title.contains(title.toLowerCase()))
-				|| (title.toLowerCase().contains(song.title));
+		return (song.titleLowerCase.contains(title.toLowerCase()))
+				|| (title.toLowerCase().contains(song.titleLowerCase));
 	}
 
 }

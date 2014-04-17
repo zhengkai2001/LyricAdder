@@ -36,6 +36,9 @@ import javax.swing.JTextPane;
 import javax.swing.JScrollPane;
 import javax.swing.JCheckBox;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
 /**
  * 歌词添加器的GUI界面
  * 
@@ -47,12 +50,6 @@ public class LyricSystem {
 	private final static Font yahei = new Font("微软雅黑", Font.PLAIN, 12);
 	private final static String version = "0.1";
 
-	private final static String[] helpStrings = {
-			"使用说明：", "本软件会将指定目录下的所有音乐文件自动添加歌词，添加后的歌词可以在 iOS 的自带音乐 app 中显示。",
-			" - 目前仅支持 .mp3 和 .m4a 文件，请确保歌曲都包含正确的标签（歌名、艺术家）",
-			" - 歌词来源于各个网站，本软件无法保证为所有歌曲都添加上正确的歌词", " - 歌词站点推荐仅使用百度音乐，歌词迷的下载服务经常不可用",
-			" - 由于歌词站点的网页随时可能发生变化，因此本软件"};
-
 	private static String musicDirectory = "D:\\Music1";
 	// private static String lyricDir = "C:\\Lyrics\\";
 
@@ -63,6 +60,7 @@ public class LyricSystem {
 	private GUIPrintStream guiPrintStream;
 	private JCheckBox checkBox_log, checkBox_baidu, checkBox_gecimi, checkBox_lyricwiki;
 	private JButton button_browse, button_start, button_pause, button_stop;
+	private JLabel label_setLyricSiteHelp;
 
 	private boolean started;
 	private boolean paused;
@@ -125,14 +123,30 @@ public class LyricSystem {
 				LyricSystem.class.getResource("/com/zhengkai/media/LyricAdder.png")));
 		frame.setBounds(100, 100, 500, 400);
 		frame.setLocationRelativeTo(null);
+		frame.getContentPane().setLayout(null);
 		frame.setResizable(false);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		JMenuBar menuBar = new JMenuBar();
-		frame.setJMenuBar(menuBar);
 
 		JMenu menu_help = new JMenu("帮助");
 		menuBar.add(menu_help);
+
+		JMenuItem menuItem_help = new JMenuItem("使用说明");
+		menuItem_help.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				castHelp();
+			}
+		});
+		menu_help.add(menuItem_help);
+
+		JMenuItem menuItem_lyricSiteHelp = new JMenuItem("该选择哪个歌词站点？");
+		menuItem_lyricSiteHelp.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				castLyricSiteHelp();
+			}
+		});
+		menu_help.add(menuItem_lyricSiteHelp);
 
 		JMenuItem menuItem_about = new JMenuItem("关于...");
 		menuItem_about.addActionListener(new ActionListener() {
@@ -140,16 +154,9 @@ public class LyricSystem {
 				castAbout();
 			}
 		});
-
-		JMenuItem menuItem_help = new JMenuItem("使用帮助");
-		menuItem_help.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				castHelp();
-			}
-		});
-		menu_help.add(menuItem_help);
 		menu_help.add(menuItem_about);
-		frame.getContentPane().setLayout(null);
+
+		frame.setJMenuBar(menuBar);
 
 		checkBox_baidu = new JCheckBox("百度音乐");
 		checkBox_baidu.setSelected(true);
@@ -157,16 +164,41 @@ public class LyricSystem {
 		frame.getContentPane().add(checkBox_baidu);
 
 		checkBox_gecimi = new JCheckBox("歌词迷");
+		checkBox_gecimi.setSelected(true);
 		checkBox_gecimi.setBounds(92, 87, 80, 23);
 		frame.getContentPane().add(checkBox_gecimi);
 
 		checkBox_lyricwiki = new JCheckBox("LyricWiki");
+		checkBox_lyricwiki.setSelected(true);
 		checkBox_lyricwiki.setBounds(10, 112, 103, 23);
 		frame.getContentPane().add(checkBox_lyricwiki);
 
-		JLabel label_setLyricSite = new JLabel("要使用的歌词站点：");
-		label_setLyricSite.setBounds(10, 66, 120, 15);
-		frame.getContentPane().add(label_setLyricSite);
+		label_setLyricSiteHelp = new JLabel("要使用的歌词站点：");
+		label_setLyricSiteHelp.setBounds(10, 66, 120, 15);
+		frame.getContentPane().add(label_setLyricSiteHelp);
+
+		label_setLyricSiteHelp = new JLabel();
+		label_setLyricSiteHelp.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				castLyricSiteHelp();
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				label_setLyricSiteHelp.setCursor(Cursor
+						.getPredefinedCursor(Cursor.HAND_CURSOR));
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				label_setLyricSiteHelp.setCursor(Cursor
+						.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			}
+		});
+		label_setLyricSiteHelp.setText("<html><b>（我该选择哪个？）</b></html>");
+		label_setLyricSiteHelp.setBounds(118, 66, 120, 15);
+		frame.getContentPane().add(label_setLyricSiteHelp);
 
 		JLabel label_setMusicPath = new JLabel("设置歌曲目录：");
 		label_setMusicPath.setBounds(10, 10, 100, 15);
@@ -189,7 +221,7 @@ public class LyricSystem {
 		frame.getContentPane().add(button_browse);
 
 		checkBox_log = new JCheckBox("保存log");
-		checkBox_log.setBounds(213, 76, 80, 23);
+		checkBox_log.setBounds(248, 112, 80, 23);
 		checkBox_log.setSelected(false);
 		frame.getContentPane().add(checkBox_log);
 
@@ -199,7 +231,7 @@ public class LyricSystem {
 				start();
 			}
 		});
-		button_start.setBounds(299, 66, 185, 35);
+		button_start.setBounds(334, 66, 150, 35);
 		frame.getContentPane().add(button_start);
 
 		button_pause = new JButton("暂停");
@@ -208,7 +240,7 @@ public class LyricSystem {
 				pauseOrResume();
 			}
 		});
-		button_pause.setBounds(299, 112, 75, 23);
+		button_pause.setBounds(334, 112, 68, 23);
 		frame.getContentPane().add(button_pause);
 
 		button_stop = new JButton("停止");
@@ -217,7 +249,7 @@ public class LyricSystem {
 				stop();
 			}
 		});
-		button_stop.setBounds(409, 112, 75, 23);
+		button_stop.setBounds(416, 112, 68, 23);
 		frame.getContentPane().add(button_stop);
 
 		scrollPane = new JScrollPane();
@@ -322,22 +354,38 @@ public class LyricSystem {
 	private void castHelp() {
 		ArrayList<JLabel> labelList = new ArrayList<JLabel>();
 
-		JLabel helpLabel = new JLabel(generateLabString(helpStrings));
+		JLabel helpLabel = new JLabel(generateLabelString(helpStrings));
 		labelList.add(helpLabel);
 
-		// JLabel attentionLabel = new JLabel(generateLabString(attentionStrings));
-		// labelList.add(attentionLabel);
-
-		JPanel helpPanel = new JPanel();
-		helpPanel.setLayout(new GridLayout(labelList.size(), 1));
-		for (JLabel label : labelList) {
-			helpPanel.add(label);
-		}
+		JPanel helpPanel = createPanel(labelList);
 
 		JOptionPane.showMessageDialog(frame, helpPanel, "使用帮助", JOptionPane.QUESTION_MESSAGE);
 	}
 
-	private String generateLabString(String[] strings) {
+	/**
+	 * 从给定的JLabel列表生成JPanel
+	 * 
+	 * @param labelList
+	 *        指定的标签列表
+	 * @return JPanel
+	 */
+	private JPanel createPanel(ArrayList<JLabel> labelList) {
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridLayout(labelList.size(), 1));
+		for (JLabel label : labelList) {
+			panel.add(label);
+		}
+		return panel;
+	}
+
+	/**
+	 * 将字符串数组按照每个元素一行的方式，组成一个HTML字符串
+	 * 
+	 * @param strings
+	 *        输入的字符串数组
+	 * @return HTML字符串
+	 */
+	private String generateLabelString(String[] strings) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<html>");
 
@@ -350,12 +398,23 @@ public class LyricSystem {
 		return sb.toString();
 	}
 
+	private void castLyricSiteHelp() {
+		ArrayList<JLabel> labelList = new ArrayList<JLabel>();
+
+		JLabel helpLabel = new JLabel(generateLabelString(lyricSiteHelpStrings));
+		labelList.add(helpLabel);
+
+		JPanel helpPanel = createPanel(labelList);
+
+		JOptionPane.showMessageDialog(frame, helpPanel, "歌词网站选择帮助",
+				JOptionPane.QUESTION_MESSAGE);
+	}
+
 	/**
 	 * 显示关于信息
 	 */
 	private void castAbout() {
-		JPanel aboutPanel = new JPanel();
-		aboutPanel.setLayout(new GridLayout(3, 1));
+		ArrayList<JLabel> labelList = new ArrayList<JLabel>();
 
 		URLLabel authorLabel = new URLLabel("作者: zk", "weibo.com/1267591671");
 		JLabel versionLabel = new JLabel("version: " + version);
@@ -363,9 +422,11 @@ public class LyricSystem {
 				"github: https://github.com/zhengkai2001/LyricAdder",
 				"https://github.com/zhengkai2001/LyricAdder");
 
-		aboutPanel.add(authorLabel);
-		aboutPanel.add(versionLabel);
-		aboutPanel.add(githubLabel);
+		labelList.add(authorLabel);
+		labelList.add(versionLabel);
+		labelList.add(githubLabel);
+
+		JPanel aboutPanel = createPanel(labelList);
 
 		JOptionPane
 				.showMessageDialog(frame, aboutPanel, "关于", JOptionPane.INFORMATION_MESSAGE);
@@ -381,4 +442,18 @@ public class LyricSystem {
 			e.printStackTrace();
 		}
 	}
+
+	private final static String[] lyricSiteHelpStrings = {
+			"关于歌词站点的选择：",
+			"三个歌词网站各自有优缺点，请根据你的歌曲库的实际情况进行选择。",
+			" - lyricwiki：国外网站，根据歌名和歌手名的精确查找，英文歌很全。缺点是没有中文歌，且连接超慢。网址：http://api.wikia.com/wiki/LyricWiki_API。",
+			" - 歌词迷：国内网站，根据歌名和歌手名的精确查找，中英文歌都有一些。缺点是提供歌词下载的服务器经常出错。网址：http://geci.me/api。",
+			" - 百度音乐：众所周知的网站，访问速度超快。缺点是只有模糊查找，很容易找到错误的歌词。", "",
+			" - 如果有多个网站被勾选，优先级是lyricwiki > 歌词迷 > 百度音乐。", " - 如果你发现某个网站无法连接或者速度很慢，请停止并取消对其的勾选。" };
+
+	private final static String[] helpStrings = {
+			"使用说明：", "本软件会将指定目录下的所有音乐文件自动添加歌词，添加后的歌词可以在 iOS 的自带音乐 app 中显示。",
+			" - 目前仅支持 .mp3 和 .m4a 文件，请确保歌曲都包含正确的标签（歌名、艺术家）",
+			" - 歌词来源于各个网站，本软件无法保证为所有歌曲都添加上正确的歌词",
+			" - 由于歌词站点的网页随时可能发生变化，因此本软件随时可能失效。若失效，请尝试获取最新版本。" };
 }

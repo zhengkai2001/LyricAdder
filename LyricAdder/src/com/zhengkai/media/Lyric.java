@@ -15,7 +15,8 @@ import java.util.ArrayList;
 public class Lyric extends MusicObject {
 	private final static String encoding = "UTF-8";
 	private final static String[] infoList = new String[] {
-			"制作", "QQ", "★", "www.", ".com", "匹配时间为", "edit:" };
+			"制作", "QQ", "★", "www.", ".com", "匹配时间为", "edit:", "[ti:", "[ar:", "[al:", "歌手:",
+			"专辑:", "词 曲:" };
 
 	// 原始lrc歌词，包含时间信息等
 	private ArrayList<String> lyricLines;

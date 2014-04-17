@@ -42,9 +42,6 @@ public class Song extends MusicObject {
 	public int year;
 	public String genre;
 
-	/**
-	 * 默认构造函数
-	 */
 	public Song() {
 		super();
 	}
@@ -58,6 +55,7 @@ public class Song extends MusicObject {
 	public Song(String filePath) {
 		super(filePath);
 		try {
+			// 为mp3文件和m4a文件分别构造音频文件对象
 			if (extensionName.equals(".mp3")) {
 				this.mp3File = new MP3File(this.filePath);
 				this.tag = this.mp3File.getTag();
@@ -67,6 +65,7 @@ public class Song extends MusicObject {
 			}
 
 			if (this.tag == null) {
+				// 如果标签不存在，则建立一个默认的标签
 				if (extensionName.equals(".mp3")) {
 					this.mp3File.setTag(new ID3v24Tag());
 					this.mp3File.save();
@@ -77,6 +76,7 @@ public class Song extends MusicObject {
 					this.tag = this.audioFile.getTag();
 				}
 			} else {
+				// 如果标签存在，则获取歌名和歌手名
 				this.title = getTitleFromTag().toLowerCase();
 				this.artist = getArtistFromTag().toLowerCase();
 			}

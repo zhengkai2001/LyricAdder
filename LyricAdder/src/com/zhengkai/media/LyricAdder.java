@@ -57,7 +57,7 @@ public class LyricAdder extends Thread {
 			// song.renameFileUsingTitleInTag();
 			// song.outputTag();
 
-			ArrayList<String> lyricLines = getLyricFromInternet(song);
+			ArrayList<String> lyricLines = lyricHelper.getLyricFromInternet(song);
 			if (lyricLines != null) {
 				Lyric lyric = new Lyric(lyricLines);
 				lyric.save(lyricDirectory);
@@ -67,17 +67,6 @@ public class LyricAdder extends Thread {
 			System.out.println();
 			System.out.flush();
 		}
-	}
-
-	/**
-	 * 为某一首歌曲从网上获取歌词
-	 * 
-	 * @param song
-	 *        指定的歌曲
-	 * @return 歌词
-	 */
-	private ArrayList<String> getLyricFromInternet(Song song) {
-		return lyricHelper.getLyricFromInternet(song);
 	}
 
 	/**

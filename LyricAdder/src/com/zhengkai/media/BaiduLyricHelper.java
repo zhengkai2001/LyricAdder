@@ -2,15 +2,9 @@ package com.zhengkai.media;
 
 import java.util.ArrayList;
 
-import org.htmlparser.Node;
-import org.htmlparser.Parser;
-import org.htmlparser.filters.AndFilter;
-import org.htmlparser.filters.HasAttributeFilter;
-import org.htmlparser.filters.TagNameFilter;
-import org.htmlparser.nodes.TagNode;
-import org.htmlparser.tags.Span;
-import org.htmlparser.util.NodeList;
-import org.htmlparser.util.ParserException;
+import org.htmlcleaner.HtmlCleaner;
+import org.htmlcleaner.TagNode;
+import org.htmlcleaner.XPatherException;
 import org.json.JSONObject;
 
 /**
@@ -40,130 +34,102 @@ public class BaiduLyricHelper extends LyricHelperBase {
 	 * @param searchArtist
 	 *        是否要搜索歌手名
 	 * @param strictLevel
-	 *        匹配的严格程度：3-歌曲名和歌手名需要同时匹配；2-只需要歌曲名匹配；1-直接返回第一条结果
+	 *        是否启用严格匹配：true - 歌名、歌手名都必须一致；false - 只需要歌名一致
 	 * @return 歌词
 	 */
 
 	protected ArrayList<String> getLyric(Song song, boolean searchArtist, boolean strict) {
-		try {
-			String urlString = null;
-			if (searchArtist) {
-				urlString = new String(urlStringBase + song.title + " " + song.artist);
-			} else {
-				urlString = new String(urlStringBase + song.title);
-			}
+		String urlString = null;
+		if (searchArtist) {
+			urlString = new String(urlStringBase + song.title + " " + song.artist);
+		} else {
+			urlString = new String(urlStringBase + song.title);
+		}
 
-			String htmlString = getHTMLFromURL(urlString);
-			if (htmlString == null) {
+		try {
+			String htmlContent = null;
+			TagNode node = null;
+
+			// 使用HtmlCleaner来解析HTML
+			HtmlCleaner cleaner = new HtmlCleaner();
+
+			htmlContent = getHTMLFromURL(urlString);
+			if (htmlContent == null) {
 				return null;
 			}
-			// System.out.println(htmlString);
-
-			Parser parser;
-			AndFilter filter;
-
-			// <div id="result_container">
-			parser = new Parser(htmlString);
-			filter = new AndFilter(new TagNameFilter("div"), new HasAttributeFilter("id",
-					"result_container"));
-			Node resultNode = parser.parse(filter).elementAt(0);
+			node = cleaner.clean(htmlContent);
 
 			// <li class="clearfix bb">
-			parser = new Parser(resultNode.toHtml());
-			filter = new AndFilter(new TagNameFilter("li"), new HasAttributeFilter("class",
-					"clearfix bb"));
-			NodeList songNodeList = parser.parse(filter);
+			Object[] songDivs = node.evaluateXPath("//li[@class='clearfix bb']");
+			if (songDivs == null || songDivs.length == 0) {
+				return null;
+			}
+			for (Object songDiv : songDivs) {
+				// 找出歌名
+				// <span class="song-title">
+				// <a title="I'm Yours">
+				Object[] anchors = ((TagNode) songDiv)
+						.evaluateXPath("//span[@class='song-title']/a");
+				if (anchors == null || anchors.length == 0) {
+					return null;
+				}
+				String title = ((TagNode) anchors[0]).getAttributeByName("title");
+				System.out.println(title);
 
-			for (int i = 0; i != songNodeList.size(); i++) {
-				Node songNode = songNodeList.elementAt(i);
-				Parser songNodeParser;
-
-				// System.out.println("i = " + i);
-				// System.out.println(songNode.toHtml());
-
-				// <span class="song-title">歌曲:<a href="/song/7451676"
-				// title="歌曲名"> ......
-				String title = null;
-				songNodeParser = new Parser(songNode.toHtml());
-				AndFilter titleFilter = new AndFilter(new TagNameFilter("span"),
-						new HasAttributeFilter("class", "song-title"));
-				Node titleNodeParent = songNodeParser.parse(titleFilter).elementAt(0);
-				TagNode titleNode = (TagNode) titleNodeParent.getChildren().elementAt(1);
-				title = titleNode.getAttribute("title");
-				// System.out.println(title);
-
-				String artist = null;
-				// <span class="artist-title">歌手:<span class="author_list"
-				// title="歌手名"> ......
-				songNodeParser = new Parser(songNode.toHtml());
-				AndFilter artistFilter = new AndFilter(new TagNameFilter("span"),
-						new HasAttributeFilter("class", "artist-title"));
-				Node artistNodeParent = songNodeParser.parse(artistFilter).elementAt(0);
-				TagNode artistNode = (TagNode) artistNodeParent.getChildren().elementAt(1);
-				artist = artistNode.getAttribute("title");
-				// System.out.println(artist);
-
+				// 找出歌手名
+				// <span class="artist-title">
+				// <span title="Jason Mraz">
+				Object[] spans = ((TagNode) songDiv)
+						.evaluateXPath("//span[@class='artist-title']/span");
+				if (spans == null || spans.length == 0) {
+					return null;
+				}
+				String artist = ((TagNode) spans[0]).getAttributeByName("title");
+				System.out.println(artist);
+				// 判断歌曲是否与搜索结果匹配
 				boolean found = false;
 				if (strict) {
-					if (matched(song, title, artist) || matched(song, title)) {
+					if (matched(song, title, artist)) {
 						found = true;
 					}
 				} else {
-					found = true;
+					if (matched(song, title)) {
+						found = true;
+					}
 				}
 
+				found = true;
+				// 若匹配，则下载LRC歌词
 				if (found) {
-					// System.out.println(songNode.toHtml());
-					// System.out.println("-----");
-
+					// 找到下载LRC歌词的超链接
 					// <span class="lyric-action">
-					songNodeParser = new Parser(songNode.toHtml());
-					AndFilter lyricFilter = new AndFilter(new TagNameFilter("span"),
-							new HasAttributeFilter("class", "lyric-action"));
-					Node lyricNodeParent = (Span) songNodeParser.parse(lyricFilter).elementAt(
-							0);
-					if (lyricNodeParent == null) {
-						continue;
+					// <span><a></a></span>
+					// <a class="down-lrc-btn { 'href':'/data2/lrc/31252011/31252011.lrc' }"
+					// href="#"></a>
+					anchors = ((TagNode) songDiv)
+							.evaluateXPath("//span[@class='lyric-action']/a");
+					System.out.println(anchors.length);
+					if (anchors == null || anchors.length == 0) {
+						return null;
 					}
-					// System.out.println(lyricNodeParent.toHtml());
-					NodeList lyricNodeList = lyricNodeParent.getChildren();
+					String downloadClass = ((TagNode) anchors[0]).getAttributeByName("class");
+					System.out.println(downloadClass);
+					if (downloadClass.contains("down-lrc-btn")) {
+						int openingBrace = downloadClass.indexOf('{');
+						int closingQuote = downloadClass.lastIndexOf('}');
+						String href = downloadClass.substring(openingBrace, closingQuote + 1);
+						// System.out.println(href);
 
-					for (int j = 0; j != lyricNodeList.size(); j++) {
-						// System.out.println("j = " + j + ": " +
-						// lyricNodeList.elementAt(j).toHtml());
-						NodeList lyricNodeChildren = lyricNodeList.elementAt(j).getChildren();
-						if (lyricNodeChildren == null) {
-							continue;
-						} else {
-							// <a
-							// class="down-lrc-btn { 'href':'/data2/lrc/12741704/12741704.lrc' }"
-							// href="#">下载LRC歌词</a>
-							for (int k = 0; k != lyricNodeChildren.size(); k++) {
-								if (lyricNodeChildren.elementAt(k).getText()
-										.contains("下载LRC歌词")) {
-									String downloadClass = ((TagNode) lyricNodeList
-											.elementAt(j)).getAttribute("class");
-									// System.out.println(downloadClass);
+						JSONObject jsonObject = new JSONObject(href);
+						String lrcURLString = jsonObject.getString("href");
+						// System.out.println(lrcURLString);
 
-									int openingBrace = downloadClass.indexOf('{');
-									int closingQuote = downloadClass.lastIndexOf('}');
-									String href = downloadClass.substring(openingBrace,
-											closingQuote + 1);
-									// System.out.println(href);
-
-									JSONObject jsonObject = new JSONObject(href);
-									String lrcURLString = jsonObject.getString("href");
-									// System.out.println(lrcURLString);
-
-									System.out.println("baidu: found! Download successfully.");
-									return getLRCFromURL(urlStringBase_lrc + lrcURLString);
-								}
-							}
-						}
+						System.out.println("baidu: found! Download successfully.");
+						return getLRCFromURL(urlStringBase_lrc + lrcURLString);
 					}
 				}
 			}
-		} catch (ParserException e) {
+		} catch (XPatherException e) {
 			e.printStackTrace();
 		}
 		return null;
