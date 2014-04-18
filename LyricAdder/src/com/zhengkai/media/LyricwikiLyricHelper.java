@@ -17,6 +17,7 @@ import org.htmlcleaner.XPatherException;
  */
 public class LyricwikiLyricHelper extends LyricHelperBase {
 	private final static String urlStringBase = "http://lyrics.wikia.com/api.php?func=getSong";
+	private final static String xmlFormat = "&fmt=xml";
 
 	private static LyricwikiLyricHelper instance = new LyricwikiLyricHelper();
 
@@ -35,7 +36,9 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 	 * @return 歌词
 	 */
 	public ArrayList<String> getLyric(Song song) {
-		String urlString = urlStringBase + "&artist=" + song.artist + "&song=" + song.title;
+		// LyricWiki只能是精确搜索，如果缺少歌名或者歌手名，就无法搜索
+		String urlString = urlStringBase + "&artist=" + song.artist + "&song=" + song.title
+				+ xmlFormat;
 
 		try {
 			String htmlContent = null;
@@ -51,22 +54,22 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 			}
 			node = cleaner.clean(htmlContent);
 
-			// <ul>
-			// <a href="http://lyrics.wikia.com/Cake:Dime"
-			// title="url">http://lyrics.wikia.com/Cake:Dime</a>
-			// <li></li>
-			// <li></li>
-			// <li></li>
-			// </ul>
-
-			// 找到歌词网址
-			anchors = node.evaluateXPath("//ul/a[@title='url']");
+			// <LyricsResult>
+			// <url>http://lyrics.wikia.com/Tool:Schism</url>
+			// </LyricsResult>
+			anchors = node.evaluateXPath("//url");
 			if (anchors == null || anchors.length == 0) {
 				return null;
 			}
 			anchor = anchors[0];
 			String href = ((TagNode) anchor).getText().toString();
 
+			// 如果歌词网址为“http://lyrics.wikia.com”，说明没有搜索到歌词
+			if (href.equals("http://lyrics.wikia.com")) {
+				return null;
+			}
+
+			// 获取歌词显示网页
 			htmlContent = getHTMLFromURL(href);
 			if (htmlContent == null) {
 				return null;
@@ -112,11 +115,11 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 
 		// 去除所有自然换行符
 		lyricString = lyricString.replaceAll("\n", "");
-		
+
 		// 以 <br /> 为换行符，建立歌词容器
-		//如果连续出现两个 <br />，说明此处需要空一行
+		// 如果连续出现两个 <br />，说明此处需要空一行
 		lyricString = lyricString.replaceAll("<br /><br />", "\n<br />");
-		
+
 		String[] lines = lyricString.split("<br />");
 		ArrayList<String> result = new ArrayList<String>();
 		for (String line : lines) {

@@ -74,7 +74,7 @@ public class BaiduLyricHelper extends LyricHelperBase {
 					return null;
 				}
 				String title = ((TagNode) anchors[0]).getAttributeByName("title");
-				System.out.println(title);
+				// System.out.println(title);
 
 				// 找出歌手名
 				// <span class="artist-title">
@@ -85,7 +85,8 @@ public class BaiduLyricHelper extends LyricHelperBase {
 					return null;
 				}
 				String artist = ((TagNode) spans[0]).getAttributeByName("title");
-				System.out.println(artist);
+				// System.out.println(artist);
+
 				// 判断歌曲是否与搜索结果匹配
 				boolean found = false;
 				if (strict) {
@@ -108,12 +109,10 @@ public class BaiduLyricHelper extends LyricHelperBase {
 					// href="#"></a>
 					anchors = ((TagNode) songDiv)
 							.evaluateXPath("//span[@class='lyric-action']/a");
-					System.out.println(anchors.length);
 					if (anchors == null || anchors.length == 0) {
 						return null;
 					}
 					String downloadClass = ((TagNode) anchors[0]).getAttributeByName("class");
-					System.out.println(downloadClass);
 					if (downloadClass.contains("down-lrc-btn")) {
 						int openingBrace = downloadClass.indexOf('{');
 						int closingQuote = downloadClass.lastIndexOf('}');

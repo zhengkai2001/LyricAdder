@@ -52,7 +52,8 @@ public class LyricAdder extends Thread {
 	private void addLyricsFromInternet() {
 		for (int i = 0; i != songs.size(); i++) {
 			Song song = (Song) songs.get(i);
-			System.out.println("第" + (i + 1) + "首：" + song.title + " " + song.filePath);
+			System.out.println("第" + (i + 1) + "首：[" + song.title + "][" + song.artist + "] "
+					+ song.filePath);
 
 			// song.renameFileUsingTitleInTag();
 			// song.outputTag();

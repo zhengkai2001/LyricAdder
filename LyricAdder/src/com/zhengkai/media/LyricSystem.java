@@ -50,7 +50,10 @@ public class LyricSystem {
 	private final static Font yahei = new Font("微软雅黑", Font.PLAIN, 12);
 	private final static String version = "0.1";
 
-	private static String musicDirectory = "D:\\Music1";
+	// 指定是否要将system.out重定向到GUI面板上去
+	private final boolean output2GUI = false;
+
+	private static String musicDirectory = "D:\\Music1\\1";
 	// private static String lyricDir = "C:\\Lyrics\\";
 
 	private JFrame frame;
@@ -262,7 +265,9 @@ public class LyricSystem {
 		textPane.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 
 		guiPrintStream = new GUIPrintStream(System.out, textPane);
-		System.setOut(guiPrintStream);
+		if (output2GUI) {
+			System.setOut(guiPrintStream);
+		}
 	}
 
 	private void setComponentsDefault() {
@@ -446,7 +451,7 @@ public class LyricSystem {
 	private final static String[] lyricSiteHelpStrings = {
 			"关于歌词站点的选择：",
 			"三个歌词网站各自有优缺点，请根据你的歌曲库的实际情况进行选择。",
-			" - lyricwiki：国外网站，根据歌名和歌手名的精确查找，英文歌很全。缺点是没有中文歌，且连接超慢。网址：http://api.wikia.com/wiki/LyricWiki_API。",
+			" - lyricwiki：国外网站，根据歌名和歌手名的精确查找，英文歌非常全。缺点是没有中文歌。网址：http://api.wikia.com/wiki/LyricWiki_API。",
 			" - 歌词迷：国内网站，根据歌名和歌手名的精确查找，中英文歌都有一些。缺点是提供歌词下载的服务器经常出错。网址：http://geci.me/api。",
 			" - 百度音乐：众所周知的网站，访问速度超快。缺点是只有模糊查找，很容易找到错误的歌词。", "",
 			" - 如果有多个网站被勾选，优先级是lyricwiki > 歌词迷 > 百度音乐。", " - 如果你发现某个网站无法连接或者速度很慢，请停止并取消对其的勾选。" };

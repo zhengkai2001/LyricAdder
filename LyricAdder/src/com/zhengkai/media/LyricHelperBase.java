@@ -20,8 +20,8 @@ import java.util.Scanner;
  */
 public abstract class LyricHelperBase {
 	protected final static String encoding = "UTF-8";
-	private final static int connectTimeout = 2000;
-	private final static int readTimeout = 5000;
+	private final static int connectTimeout = 5000;
+	private final static int readTimeout = 10000;
 
 	protected static String urlStringBase;
 
@@ -127,7 +127,7 @@ public abstract class LyricHelperBase {
 	 * @return 是否匹配
 	 */
 	protected boolean matched(Song song, String title, String artist) {
-		if (song.title == null || song.artist == null) {
+		if (song.title == null || song.artist == null || title == null || artist == null) {
 			return false;
 		} else {
 			return (song.titleLowerCase.contains(title.toLowerCase()) && song.artistLowerCase
@@ -151,8 +151,12 @@ public abstract class LyricHelperBase {
 	 * @return 是否匹配
 	 */
 	protected boolean matched(Song song, String title) {
-		return (song.titleLowerCase.contains(title.toLowerCase()))
-				|| (title.toLowerCase().contains(song.titleLowerCase));
+		if (song.title == null || title == null) {
+			return false;
+		} else {
+			return (song.titleLowerCase.contains(title.toLowerCase()))
+					|| (title.toLowerCase().contains(song.titleLowerCase));
+		}
 	}
 
 }

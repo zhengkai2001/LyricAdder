@@ -1,5 +1,7 @@
 package com.zhengkai.media;
 
+import java.io.File;
+
 /**
  * 所有音乐文件类的基类
  * 
@@ -7,6 +9,7 @@ package com.zhengkai.media;
  * @date 2014年4月15日
  */
 public class MusicObject {
+	protected File file;
 	protected String filePath;
 
 	public String fileFullName;
@@ -16,6 +19,9 @@ public class MusicObject {
 	// 歌名和歌手名
 	public String title;
 	public String artist;
+
+	public boolean hasTitle;
+	public boolean hasArtist;
 
 	// 用于和搜索结果比较的歌名和歌手名
 	public String titleLowerCase;
@@ -33,6 +39,7 @@ public class MusicObject {
 	 * @param filePath
 	 */
 	public MusicObject(String filePath) {
+		this.file = new File(filePath);
 		this.filePath = filePath;
 		this.fileFullName = getFileFullName(this.filePath);
 		this.fileName = getFileName(this.fileFullName);
@@ -40,12 +47,18 @@ public class MusicObject {
 
 		this.title = getTitle(this.fileName);
 		if (this.title != null) {
+			this.hasTitle = true;
 			this.titleLowerCase = this.title.toLowerCase();
+		} else {
+			this.hasTitle = false;
 		}
 
 		this.artist = getArtist(this.fileName);
 		if (this.artist != null) {
+			this.hasArtist = true;
 			this.artistLowerCase = this.artist.toLowerCase();
+		} else {
+			this.hasArtist = false;
 		}
 	}
 
