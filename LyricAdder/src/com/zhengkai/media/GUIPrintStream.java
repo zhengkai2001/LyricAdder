@@ -12,12 +12,12 @@ import javax.swing.text.JTextComponent;
  * @date 2014年4月15日
  */
 public class GUIPrintStream extends PrintStream {
-
+	private StringBuffer stringBuffer;
 	private JTextComponent component;
-	private StringBuffer sb = new StringBuffer();
 
 	public GUIPrintStream(OutputStream out, JTextComponent component) {
 		super(out);
+		stringBuffer = new StringBuffer();
 		this.component = component;
 	}
 
@@ -26,13 +26,14 @@ public class GUIPrintStream extends PrintStream {
 		final String message = new String(buf, off, len);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				sb.append(message);
-				component.setText(sb.toString());
+				stringBuffer.append(message);
+				component.setText(stringBuffer.toString());
 			}
 		});
 	}
 
 	public void clear() {
-		sb = new StringBuffer();
+		stringBuffer = new StringBuffer();
+		component.setText(stringBuffer.toString());
 	}
 }

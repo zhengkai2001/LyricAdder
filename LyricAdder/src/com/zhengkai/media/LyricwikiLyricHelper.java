@@ -26,6 +26,7 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 	}
 
 	private LyricwikiLyricHelper() {
+		siteName = new String("LyricWiki");
 	}
 
 	/**
@@ -36,7 +37,11 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 	 * @return 歌词
 	 */
 	public ArrayList<String> getLyric(Song song) {
-		// LyricWiki只能是精确搜索，如果缺少歌名或者歌手名，就无法搜索
+		// lyricwiki只能是精确搜索
+		if (song.title == null || song.artist == null) {
+			return null;
+		}
+
 		String urlString = urlStringBase + "&artist=" + song.artist + "&song=" + song.title
 				+ xmlFormat;
 
@@ -55,8 +60,21 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 			node = cleaner.clean(htmlContent);
 
 			// <LyricsResult>
+			// <lyrics>lyrics...</lyrics> or <lyrics>Not found</lyrics>
 			// <url>http://lyrics.wikia.com/Tool:Schism</url>
 			// </LyricsResult>
+			anchors = node.evaluateXPath("//lyrics");
+			if (anchors == null || anchors.length == 0) {
+				return null;
+			}
+			anchor = anchors[0];
+			String lyrics = ((TagNode) anchor).getText().toString();
+
+			// 如果歌词内容为“Not found”，说明没有搜索到歌词
+			if (lyrics.equals("Not found")) {
+				return null;
+			}
+
 			anchors = node.evaluateXPath("//url");
 			if (anchors == null || anchors.length == 0) {
 				return null;
@@ -87,6 +105,8 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 				return null;
 			}
 			anchor = anchors[0];
+
+			foundMessage();
 
 			CompactHtmlSerializer chs = new CompactHtmlSerializer(new CleanerProperties());
 			String rawLyricDivString = chs.getAsString((TagNode) anchor);

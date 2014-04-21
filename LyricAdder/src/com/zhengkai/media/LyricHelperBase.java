@@ -19,6 +19,7 @@ import java.util.Scanner;
  * @date 2014年4月15日
  */
 public abstract class LyricHelperBase {
+	protected String siteName = "";
 	protected final static String encoding = "UTF-8";
 	private final static int connectTimeout = 5000;
 	private final static int readTimeout = 10000;
@@ -33,7 +34,7 @@ public abstract class LyricHelperBase {
 	protected String getHTMLFromURL(String urlString) {
 		try {
 			urlString = replaceSpaces(urlString);
-			System.out.println(urlString);
+			// System.out.println(urlString);
 			URL requestURL = new URL(urlString);
 			URLConnection connection = requestURL.openConnection();
 			connection.setConnectTimeout(connectTimeout);
@@ -42,13 +43,10 @@ public abstract class LyricHelperBase {
 			try {
 				inStream = connection.getInputStream();
 			} catch (SocketTimeoutException e) {
-				System.out.println("Timed out!!!");
+				System.out.println("连接超时。");
 				return null;
-			} catch (UnknownHostException e) {
-				System.out.println("Service unavailable!!!");
-				return null;
-			} catch (FileNotFoundException e) {
-				System.out.println("Tag Error!!!");
+			} catch (UnknownHostException | FileNotFoundException e) {
+				System.out.println("无法连接到服务器。");
 				return null;
 			}
 			Scanner in = new Scanner(inStream);
@@ -75,6 +73,7 @@ public abstract class LyricHelperBase {
 	 */
 	protected ArrayList<String> getLRCFromURL(String urlString) {
 		try {
+			// System.out.println(urlString);
 			ArrayList<String> lyricLines = new ArrayList<String>();
 
 			URL lrcURL;
@@ -157,6 +156,13 @@ public abstract class LyricHelperBase {
 			return (song.titleLowerCase.contains(title.toLowerCase()))
 					|| (title.toLowerCase().contains(song.titleLowerCase));
 		}
+	}
+
+	/**
+	 * 在找到歌词后，输出提示信息
+	 */
+	protected void foundMessage() {
+		System.out.println("在" + siteName + "找到了歌词！");
 	}
 
 }

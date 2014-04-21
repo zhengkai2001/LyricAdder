@@ -21,6 +21,7 @@ public class GecimeLyricHelper extends LyricHelperBase {
 	}
 
 	private GecimeLyricHelper() {
+		siteName = new String("歌词迷");
 	}
 
 	/**
@@ -48,8 +49,6 @@ public class GecimeLyricHelper extends LyricHelperBase {
 		JSONObject JSONResult = new JSONObject(htmlString);
 
 		if (JSONResult.getInt("count") != 0) {
-			System.out.print("gecime: found!");
-
 			// 得到歌词结果的JSONArray
 			JSONArray resultArray = JSONResult.getJSONArray("result");
 			// 只使用第一个歌词
@@ -58,11 +57,10 @@ public class GecimeLyricHelper extends LyricHelperBase {
 			String lrcURLString = result1.getString("lrc");
 
 			ArrayList<String> lyricLines = getLRCFromURL(lrcURLString);
-			if (lyricLines == null) {
-				System.out.println(" ...But its lrc service is not available for now.");
-			} else {
-				System.out.println(" Download successfully.");
+			if (lyricLines != null) {
+				foundMessage();
 			}
+
 			return lyricLines;
 		}
 		return null;

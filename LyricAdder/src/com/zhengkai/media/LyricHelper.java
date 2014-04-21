@@ -42,13 +42,9 @@ public class LyricHelper {
 	 */
 	public ArrayList<String> getLyricFromInternet(Song song) {
 		ArrayList<String> result = null;
-		boolean useLyricWiki = true;
 
 		if (song.title == null) {
 			return null;
-		} else if (song.artist == null) {
-			// lyricwiki只能是精确搜索
-			useLyricWiki = false;
 		}
 
 		boolean first = true;
@@ -69,7 +65,7 @@ public class LyricHelper {
 			// 各个站点的优先级：lyricwiki > 歌词迷 > 百度音乐
 			// 首先使用歌名+歌手名进行搜索
 			if (result == null) {
-				if (lyricwiki && useLyricWiki)
+				if (lyricwiki)
 					result = lyricwikiLyricHelper.getLyric(song);
 			}
 			if (result == null) {

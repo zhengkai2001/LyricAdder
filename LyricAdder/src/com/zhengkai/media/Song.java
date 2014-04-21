@@ -2,6 +2,7 @@ package com.zhengkai.media;
 
 import java.io.File;
 import java.io.IOException;
+
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.exceptions.CannotReadException;
@@ -80,31 +81,6 @@ public class Song extends MusicObject {
 						this.hasArtist = true;
 						this.artist = v1Tag.getFirst(FieldKey.ARTIST);
 					}
-
-					if (v1Tag.hasField(FieldKey.ALBUM)) {
-						this.hasAlbum = true;
-						this.album = v1Tag.getFirst(FieldKey.ALBUM);
-					} else {
-						this.hasAlbum = false;
-					}
-
-					if (v1Tag.hasField(FieldKey.YEAR)) {
-						this.hasYear = true;
-						this.year = v1Tag.getFirst(FieldKey.YEAR);
-					} else {
-						this.hasYear = false;
-					}
-
-					if (v1Tag.hasField(FieldKey.GENRE)) {
-						this.hasGenre = true;
-						this.genre = v1Tag.getFirst(FieldKey.GENRE);
-					} else {
-						this.hasGenre = false;
-					}
-
-					if (v1Tag.hasField(FieldKey.COMMENT)) {
-						v1Tag.setField(FieldKey.COMMENT, "");
-					}
 				}
 
 				ID3v24Tag v24Tag;
@@ -121,18 +97,6 @@ public class Song extends MusicObject {
 
 				if (isEmpty(v24Tag, FieldKey.ARTIST) && this.hasArtist) {
 					v24Tag.setField(FieldKey.ARTIST, this.artist);
-				}
-
-				if (isEmpty(v24Tag, FieldKey.ALBUM) && this.hasAlbum) {
-					v24Tag.setField(FieldKey.ALBUM, this.album);
-				}
-
-				if (isEmpty(v24Tag, FieldKey.YEAR) && this.hasYear) {
-					v24Tag.setField(FieldKey.YEAR, this.year);
-				}
-
-				if (isEmpty(v24Tag, FieldKey.GENRE) && this.hasGenre) {
-					v24Tag.setField(FieldKey.GENRE, this.genre);
 				}
 
 				this.mp3File.setID3v2Tag(v24Tag);
@@ -164,6 +128,7 @@ public class Song extends MusicObject {
 
 			getTitleFromTag();
 			getArtistFromTag();
+
 		} catch (IOException | TagException | ReadOnlyFileException
 				| InvalidAudioFrameException | CannotReadException | CannotWriteException e) {
 			e.printStackTrace();
@@ -173,11 +138,13 @@ public class Song extends MusicObject {
 	}
 
 	/**
-	 * 判断指定的tag中，指定的字段key是否为空，即不存在或者全部为空格
+	 * 判断标签中的字段是否为空，“空”即不存在或者全部为空格
 	 * 
 	 * @param tag
+	 *        标签
 	 * @param key
-	 * @return
+	 *        字段
+	 * @return 是否为空
 	 */
 	private boolean isEmpty(Tag tag, FieldKey key) {
 		if (!tag.hasField(key)) {
@@ -214,8 +181,16 @@ public class Song extends MusicObject {
 	public void removeTag() {
 		if (extensionName.equals(".mp3")) {
 			try {
-				AbstractID3v2Tag tag = this.mp3File.getID3v2Tag();
-				mp3File.delete(tag);
+				ID3v1Tag v1Tag = mp3File.getID3v1Tag();
+				if (v1Tag != null) {
+					mp3File.delete(v1Tag);
+				}
+
+				AbstractID3v2Tag v2Tag = this.mp3File.getID3v2TagAsv24();
+				if (v2Tag != null) {
+					mp3File.delete(v2Tag);
+				}
+
 				mp3File.save();
 			} catch (IOException | TagException e) {
 				e.printStackTrace();
@@ -253,8 +228,8 @@ public class Song extends MusicObject {
 	public void setLyric(Lyric lyric) {
 		try {
 			String lyricString = lyric.getLyricString();
+			// System.out.println(lyricString);
 			this.tag.setField(FieldKey.LYRICS, lyricString);
-
 			if (extensionName.equals(".mp3")) {
 				this.mp3File.save();
 			} else if (extensionName.equals(".m4a")) {

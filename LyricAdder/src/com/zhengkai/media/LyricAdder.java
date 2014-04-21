@@ -32,6 +32,8 @@ public class LyricAdder extends Thread {
 	private boolean usingLocalLyric;
 
 	private LyricHelper lyricHelper;
+	private LyricSystem lyricSystem;
+	private boolean debugMode;
 
 	/**
 	 * 添加歌词
@@ -43,6 +45,16 @@ public class LyricAdder extends Thread {
 			addLyricsLocal();
 		} else {
 			addLyricsFromInternet();
+			// removeTag();
+		}
+	}
+
+	private void removeTag() {
+		for (int i = 0; i != songs.size(); i++) {
+			Song song = (Song) songs.get(i);
+			System.out.println("第" + (i + 1) + "首：[" + song.title + "][" + song.artist + "]\n"
+					+ song.filePath);
+			song.removeTag();
 		}
 	}
 
@@ -52,7 +64,7 @@ public class LyricAdder extends Thread {
 	private void addLyricsFromInternet() {
 		for (int i = 0; i != songs.size(); i++) {
 			Song song = (Song) songs.get(i);
-			System.out.println("第" + (i + 1) + "首：[" + song.title + "][" + song.artist + "] "
+			System.out.println("第" + (i + 1) + "首：[" + song.title + "][" + song.artist + "]\n"
 					+ song.filePath);
 
 			// song.renameFileUsingTitleInTag();
@@ -191,6 +203,9 @@ public class LyricAdder extends Thread {
 	@Override
 	public void run() {
 		addLyrics();
+
+		// 添加完毕之后，将GUI重设为默认
+		lyricSystem.setDefault();
 	}
 
 	public void setLyricSites(boolean baidu, boolean gecimi, boolean lyricwiki) {
@@ -207,5 +222,9 @@ public class LyricAdder extends Thread {
 
 	public void setUsingLocalLyric(boolean usingLocalLyric) {
 		this.usingLocalLyric = usingLocalLyric;
+	}
+
+	public void setLyricSystem(LyricSystem lyricSystem) {
+		this.lyricSystem = lyricSystem;
 	}
 }

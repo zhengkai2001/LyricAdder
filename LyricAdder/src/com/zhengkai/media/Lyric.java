@@ -14,7 +14,7 @@ import java.util.ArrayList;
  */
 public class Lyric extends MusicObject {
 	private final static String encoding = "UTF-8";
-	private final static String[] infoList = new String[] {
+	private final static String[] filter = new String[] {
 			"制作", "QQ", "★", "www.", ".com", "匹配时间为", "edit:", "[ti:", "[ar:", "[al:", "歌手:",
 			"专辑:", "词 曲:" };
 
@@ -30,6 +30,12 @@ public class Lyric extends MusicObject {
 		this.lyricLines = readLyric();
 	}
 
+	/**
+	 * 从文件中读取歌词
+	 * 
+	 * @return
+	 *         歌词容器
+	 */
 	public ArrayList<String> readLyric() {
 		ArrayList<String> lines = new ArrayList<String>();
 		try {
@@ -52,6 +58,14 @@ public class Lyric extends MusicObject {
 		return lines;
 	}
 
+	/**
+	 * 删除歌词中连续的空行，即将两个及以上的空行替换为一个
+	 * 
+	 * @param lyricLine
+	 *        歌词字符串
+	 * @return
+	 *         删除了连续空行的歌词字符串
+	 */
 	private String deleteConsecutiveEmptyLines(String lyricLine) {
 		while (true) {
 			if (lyricLine.contains("\n\n\n")) {
@@ -63,7 +77,15 @@ public class Lyric extends MusicObject {
 		return lyricLine;
 	}
 
-	private String deleteRubbishInfo(String lyricLine) {
+	/**
+	 * 删除歌词中的冗余信息
+	 * 
+	 * @param lyricLine
+	 *        歌词字符串
+	 * @return
+	 *         删除了冗余信息的歌词字符串
+	 */
+	private String deleteRedundantInfo(String lyricLine) {
 		if (containsRubbishInfo(lyricLine)) {
 			return "";
 		} else {
@@ -71,25 +93,46 @@ public class Lyric extends MusicObject {
 		}
 	}
 
+	/**
+	 * 判断某一行歌词是否含有冗余信息
+	 * 
+	 * @param lyricLine
+	 *        歌词行字符串
+	 * @return
+	 *         是否含有冗余信息
+	 */
 	private boolean containsRubbishInfo(String lyricLine) {
-		for (int i = 0; i != infoList.length; i++) {
-			if (lyricLine.contains(infoList[i])) {
+		for (int i = 0; i != filter.length; i++) {
+			if (lyricLine.contains(filter[i])) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	// 删除lrc歌词的时间戳
+	/**
+	 * 删除lrc歌词的时间戳
+	 * 
+	 * @param line
+	 *        lrc歌词行字符串
+	 * @return
+	 *         删除了时间戳的字符串
+	 */
 	private String deleteTimeStamp(String line) {
 		return deleteSectionBetween(line, '[', ']');
 	}
 
+	/**
+	 * 将歌词容器中的歌词整合为单一的歌词字符串
+	 * 
+	 * @return
+	 *         歌词字符串
+	 */
 	public String getLyricString() {
 		StringBuilder lyricStringBuilder = new StringBuilder();
 		for (String lyricLine : lyricLines) {
 			lyricLine = deleteTimeStamp(lyricLine);
-			lyricLine = deleteRubbishInfo(lyricLine);
+			lyricLine = deleteRedundantInfo(lyricLine);
 
 			lyricStringBuilder.append(lyricLine);
 			lyricStringBuilder.append("\n");
@@ -100,6 +143,12 @@ public class Lyric extends MusicObject {
 		return lyricString;
 	}
 
+	/**
+	 * 将歌词保存到本地文件
+	 * 
+	 * @param lyricDirectory
+	 *        要保存的路径
+	 */
 	public void save(String lyricDirectory) {
 
 	}

@@ -24,6 +24,7 @@ public class BaiduLyricHelper extends LyricHelperBase {
 	}
 
 	private BaiduLyricHelper() {
+		siteName = new String("百度音乐");
 	}
 
 	/**
@@ -123,8 +124,13 @@ public class BaiduLyricHelper extends LyricHelperBase {
 						String lrcURLString = jsonObject.getString("href");
 						// System.out.println(lrcURLString);
 
-						System.out.println("baidu: found! Download successfully.");
-						return getLRCFromURL(urlStringBase_lrc + lrcURLString);
+						ArrayList<String> lyricLines = getLRCFromURL(urlStringBase_lrc
+								+ lrcURLString);
+						if (lyricLines != null) {
+							foundMessage();
+						}
+
+						return lyricLines;
 					}
 				}
 			}
