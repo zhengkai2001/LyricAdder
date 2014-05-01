@@ -39,7 +39,10 @@ public class LyricAdder extends Thread {
 	 * 添加歌词
 	 */
 	public void addLyrics() {
+		System.out.print("正在遍历音乐目录，请稍候……");
 		travel(musicDirectory, "music");
+		System.out.print("完成！\n\n");
+
 		if (usingLocalLyric) {
 			travel(lyricDirectory, "lyric");
 			addLyricsLocal();
@@ -47,6 +50,7 @@ public class LyricAdder extends Thread {
 			addLyricsFromInternet();
 			// removeTag();
 		}
+		System.out.print("本次添加已完成。");
 	}
 
 	private void removeTag() {

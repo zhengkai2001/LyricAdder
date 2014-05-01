@@ -5,12 +5,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 歌词助手类的基类，包含一些公共操作
@@ -33,8 +37,7 @@ public abstract class LyricHelperBase {
 	 */
 	protected String getHTMLFromURL(String urlString) {
 		try {
-			urlString = replaceSpaces(urlString);
-			// System.out.println(urlString);
+			System.out.println(urlString);
 			URL requestURL = new URL(urlString);
 			URLConnection connection = requestURL.openConnection();
 			connection.setConnectTimeout(connectTimeout);
@@ -43,10 +46,13 @@ public abstract class LyricHelperBase {
 			try {
 				inStream = connection.getInputStream();
 			} catch (SocketTimeoutException e) {
-				System.out.println("连接超时。");
+				// System.out.println("连接超时。");
 				return null;
 			} catch (UnknownHostException | FileNotFoundException e) {
-				System.out.println("无法连接到服务器。");
+				// System.out.println("无法连接到服务器。");
+				return null;
+			} catch (IOException e) {
+				// System.out.println("错误的请求，很可能是由于编码错误。");
 				return null;
 			}
 			Scanner in = new Scanner(inStream);
@@ -73,7 +79,7 @@ public abstract class LyricHelperBase {
 	 */
 	protected ArrayList<String> getLRCFromURL(String urlString) {
 		try {
-			// System.out.println(urlString);
+			System.out.println(urlString);
 			ArrayList<String> lyricLines = new ArrayList<String>();
 
 			URL lrcURL;
@@ -110,7 +116,7 @@ public abstract class LyricHelperBase {
 	 *        输入字符串
 	 * @return 替换后的字符串
 	 */
-	private String replaceSpaces(String string) {
+	protected String replaceSpaces(String string) {
 		return string.replaceAll(" ", "%20");
 	}
 
@@ -141,6 +147,47 @@ public abstract class LyricHelperBase {
 	}
 
 	/**
+	 * 判断字符串中是否含有中文
+	 * 
+	 * @param string
+	 *        待判断字符串
+	 * @return 是否含有中文
+	 */
+	protected boolean hasChinese(String string) {
+		Pattern pattern = Pattern.compile("[\u4e00-\u9fa5]");
+		Matcher matcher = pattern.matcher(string);
+		if (matcher.find()) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 处理URL中的用于搜索的字符串（歌名、歌手名）
+	 * 1. 使用URLEncode.encode()编码中文
+	 * 2. 由于encode()会将空格替换为“+”，而有些网站不认识“+”，所以还要将“+”替换为“%20”
+	 * 
+	 * @param string
+	 *        待处理的字符串
+	 * @return 处理完毕的字符串
+	 */
+	protected String processString(String string) {
+		if (string == null) {
+			return "";
+		}
+		String result = null;
+		try {
+			// System.out.println(string);
+			result = URLEncoder.encode(string, encoding).replaceAll("\\+", "%20");
+			// System.out.println(result);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+
+		return result;
+	}
+
+	/**
 	 * 判定歌曲与歌名是否匹配
 	 * 
 	 * @param song
@@ -164,5 +211,4 @@ public abstract class LyricHelperBase {
 	protected void foundMessage() {
 		System.out.println("在" + siteName + "找到了歌词！");
 	}
-
 }

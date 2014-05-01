@@ -52,7 +52,7 @@ public class LyricSystem {
 	// 指定是否要将system.out重定向到GUI面板上去
 	private final boolean output2GUI = true;
 
-	private static String musicDirectory = "D:\\Music1\\3";
+	private static String musicDirectory = "D:\\Music\\";
 	// private static String lyricDir = "C:\\Lyrics\\";
 
 	private JFrame frame;
@@ -125,9 +125,9 @@ public class LyricSystem {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setTitle("歌词添加器");
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(
 				LyricSystem.class.getResource("/com/zhengkai/media/LyricAdder.png")));
+		frame.setTitle("歌词添加器");
 		frame.setBounds(100, 100, 500, 400);
 		frame.setLocationRelativeTo(null);
 		frame.getContentPane().setLayout(null);
@@ -331,7 +331,6 @@ public class LyricSystem {
 	}
 
 	private void startAdding() {
-
 		lyricAdder = new LyricAdder();
 
 		musicDirectory = textField_musicPath.getText();
@@ -397,7 +396,7 @@ public class LyricSystem {
 		ArrayList<JLabel> labelList = new ArrayList<JLabel>();
 
 		for (String string : strings) {
-			labelList.add(new JLabel(string));
+			labelList.add(new JLabel("<html>" + string + "</html>"));
 		}
 
 		labelList.add(new JLabel());
@@ -410,10 +409,6 @@ public class LyricSystem {
 	 */
 	private void castHelp() {
 		ArrayList<JLabel> labelList = createLabels(helpStrings);
-
-		URLLabel authorLabel = new URLLabel("作者: zk", "weibo.com/1267591671");
-		labelList.add(authorLabel);
-
 		JPanel helpPanel = createPanel(labelList);
 
 		JOptionPane.showMessageDialog(frame, helpPanel, "帮助", JOptionPane.QUESTION_MESSAGE);
@@ -437,7 +432,7 @@ public class LyricSystem {
 
 		JLabel versionLabel = new JLabel("版本：" + version);
 		URLLabel authorLabel = new URLLabel("作者：zk", "weibo.com/1267591671");
-		URLLabel githubLabel = new URLLabel("github.com/zhengkai2001/LyricAdder",
+		URLLabel githubLabel = new URLLabel("https://github.com/zhengkai2001/LyricAdder",
 				"https://github.com/zhengkai2001/LyricAdder");
 
 		labelList.add(versionLabel);
@@ -456,20 +451,19 @@ public class LyricSystem {
 	}
 
 	private final static String[] lyricSiteHelpStrings = {
-			"关于歌词站点的选择：",
-			"三个歌词网站各自有优缺点，请根据你的歌曲库的实际情况进行选择。",
-			" - lyricwiki：国外网站，根据歌名和歌手名的精确查找，英文歌非常全。缺点是没有中文歌。网址：http://api.wikia.com/wiki/LyricWiki_API。",
-			" - 歌词迷：国内网站，根据歌名和歌手名的精确查找，中英文歌都有一些。缺点是提供歌词下载的服务器经常出错。网址：http://geci.me/api。",
+			"关于歌词站点的选择：", "三个歌词网站各自有优缺点，请根据你的歌曲库的实际情况进行选择。",
+			" - lyricwiki：国外网站，根据歌名和歌手名的精确查找，英文歌非常全。缺点是没有中文歌，连接速度较慢。",
+			" - 歌词迷：国内网站，根据歌名和歌手名的精确查找，中英文歌都有一些。缺点是提供歌词下载的服务器经常出错。",
 			" - 百度音乐：众所周知的网站，访问速度超快。缺点是只有模糊查找，很容易找到错误的歌词。", "",
-			" - 如果有多个网站被勾选，优先级是lyricwiki > 歌词迷 > 百度音乐。",
+			" - 如果有多个网站被勾选，优先级是 lyricwiki > 歌词迷 > 百度音乐。",
 			" - 如果你发现某个网站无法连接或者速度很慢，请停止并取消对其的勾选，然后再开始。" };
 
 	private final static String[] helpStrings = {
 			"使用说明：", "本软件会将指定目录下的所有音乐文件自动添加歌词，添加后的歌词可以在 iOS 的自带音乐 app 中显示。",
-			" - 目前仅支持 .mp3 和 .m4a 文件，请确保歌曲都包含正确的标签（歌名、艺术家）",
-			" - 歌词来源于各个网站，<b>本软件无法保证为所有歌曲都添加上正确的歌词</b>",
-			" - 由于歌词站点的网页随时可能发生变化，<b>因此本软件随时可能失效。</b>", " - 若本软件失效，请尝试联系作者并获取最新版本。",
-			" - 如果发现了bug或者有改进建议，也欢迎联系作者。" };
+			" - 搜索歌词时使用的是歌曲标签中的信息，请确保歌曲标签包含正确的歌名、艺术家名信息。",
+			" - 受本人技术水平限制，目前仅支持 .mp3 和 .m4a 文件，并且仅支持 UTF-8 编码的标签。", "",
+			" - 歌词来源于各个网站，<b>本软件无法保证为所有歌曲都添加上正确的歌词！</b>",
+			" - 由于歌词站点的网页随时可能发生变化，<b>因此本软件随时可能失效。</b>若失效，请尝试获取最新版本。", };
 
 	public void setDefault() {
 		started = false;

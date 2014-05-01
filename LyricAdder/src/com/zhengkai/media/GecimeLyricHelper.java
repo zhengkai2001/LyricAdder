@@ -36,16 +36,19 @@ public class GecimeLyricHelper extends LyricHelperBase {
 	public ArrayList<String> getLyric(Song song, boolean searchArtist) {
 		String urlString = null;
 		if (searchArtist) {
-			urlString = new String(urlStringBase + song.title + "/" + song.artist);
+			String title = processString(song.title);
+			String artist = processString(song.artist);
+			urlString = new String(urlStringBase + title + "/" + artist);
 		} else {
-			urlString = new String(urlStringBase + song.title);
+			String title = processString(song.title);
+			urlString = new String(urlStringBase + title);
 		}
 
 		String htmlString = getHTMLFromURL(urlString);
 		if (htmlString == null) {
 			return null;
 		}
-
+		
 		JSONObject JSONResult = new JSONObject(htmlString);
 
 		if (JSONResult.getInt("count") != 0) {

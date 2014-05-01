@@ -41,9 +41,13 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 		if (song.title == null || song.artist == null) {
 			return null;
 		}
+		if (hasChinese(song.title) || hasChinese(song.artist)) {
+			return null;
+		}
 
-		String urlString = urlStringBase + "&artist=" + song.artist + "&song=" + song.title
-				+ xmlFormat;
+		String title = processString(song.title);
+		String artist = processString(song.artist);
+		String urlString = urlStringBase + "&artist=" + artist + "&song=" + title + xmlFormat;
 
 		try {
 			String htmlContent = null;

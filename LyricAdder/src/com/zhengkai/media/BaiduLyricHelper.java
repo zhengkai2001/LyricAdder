@@ -42,9 +42,12 @@ public class BaiduLyricHelper extends LyricHelperBase {
 	protected ArrayList<String> getLyric(Song song, boolean searchArtist, boolean strict) {
 		String urlString = null;
 		if (searchArtist) {
-			urlString = new String(urlStringBase + song.title + " " + song.artist);
+			String title = processString(song.title);
+			String artist = processString(song.artist);
+			urlString = new String(urlStringBase + title + "%20" + artist);
 		} else {
-			urlString = new String(urlStringBase + song.title);
+			String title = processString(song.title);
+			urlString = new String(urlStringBase + title);
 		}
 
 		try {

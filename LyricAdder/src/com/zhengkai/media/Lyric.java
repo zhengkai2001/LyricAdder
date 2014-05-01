@@ -15,8 +15,8 @@ import java.util.ArrayList;
 public class Lyric extends MusicObject {
 	private final static String encoding = "UTF-8";
 	private final static String[] filter = new String[] {
-			"制作", "QQ", "★", "www.", ".com", "匹配时间为", "edit:", "[ti:", "[ar:", "[al:", "歌手:",
-			"专辑:", "词 曲:" };
+			"制作", "qq:", "qq：", "★", "www.", ".com", "匹配时间为", "edit:", "[ti:", "[ar:", "[al:",
+			"歌手:", "专辑:", "词 曲:", "http:", "xiamilyrics", "歌词整理：", "lrc" };
 
 	// 原始lrc歌词，包含时间信息等
 	private ArrayList<String> lyricLines;
@@ -103,7 +103,7 @@ public class Lyric extends MusicObject {
 	 */
 	private boolean containsRubbishInfo(String lyricLine) {
 		for (int i = 0; i != filter.length; i++) {
-			if (lyricLine.contains(filter[i])) {
+			if (lyricLine.toLowerCase().contains(filter[i])) {
 				return true;
 			}
 		}
