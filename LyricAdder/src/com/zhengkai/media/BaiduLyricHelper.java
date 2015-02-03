@@ -31,15 +31,16 @@ public class BaiduLyricHelper extends LyricHelperBase {
 	 * 从百度音乐获取歌词
 	 * 
 	 * @param song
-	 *        歌曲
+	 *            歌曲
 	 * @param searchArtist
-	 *        是否要搜索歌手名
+	 *            是否要搜索歌手名
 	 * @param strictLevel
-	 *        是否启用严格匹配：true - 歌名、歌手名都必须一致；false - 只需要歌名一致
+	 *            是否启用严格匹配：true - 歌名、歌手名都必须一致；false - 只需要歌名一致
 	 * @return 歌词
 	 */
 
-	protected ArrayList<String> getLyric(Song song, boolean searchArtist, boolean strict) {
+	protected ArrayList<String> getLyric(Song song, boolean searchArtist,
+			boolean strict) {
 		String urlString = null;
 		if (searchArtist) {
 			String title = processString(song.title);
@@ -64,7 +65,8 @@ public class BaiduLyricHelper extends LyricHelperBase {
 			node = cleaner.clean(htmlContent);
 
 			// <li class="clearfix bb">
-			Object[] songDivs = node.evaluateXPath("//li[@class='clearfix bb']");
+			Object[] songDivs = node
+					.evaluateXPath("//li[@class='clearfix bb']");
 			if (songDivs == null || songDivs.length == 0) {
 				return null;
 			}
@@ -77,7 +79,8 @@ public class BaiduLyricHelper extends LyricHelperBase {
 				if (anchors == null || anchors.length == 0) {
 					return null;
 				}
-				String title = ((TagNode) anchors[0]).getAttributeByName("title");
+				String title = ((TagNode) anchors[0])
+						.getAttributeByName("title");
 				// System.out.println(title);
 
 				// 找出歌手名
@@ -88,7 +91,8 @@ public class BaiduLyricHelper extends LyricHelperBase {
 				if (spans == null || spans.length == 0) {
 					return null;
 				}
-				String artist = ((TagNode) spans[0]).getAttributeByName("title");
+				String artist = ((TagNode) spans[0])
+						.getAttributeByName("title");
 				// System.out.println(artist);
 
 				// 判断歌曲是否与搜索结果匹配
@@ -109,18 +113,21 @@ public class BaiduLyricHelper extends LyricHelperBase {
 					// 找到下载LRC歌词的超链接
 					// <span class="lyric-action">
 					// <span><a></a></span>
-					// <a class="down-lrc-btn { 'href':'/data2/lrc/31252011/31252011.lrc' }"
+					// <a
+					// class="down-lrc-btn { 'href':'/data2/lrc/31252011/31252011.lrc' }"
 					// href="#"></a>
 					anchors = ((TagNode) songDiv)
 							.evaluateXPath("//span[@class='lyric-action']/a");
 					if (anchors == null || anchors.length == 0) {
 						return null;
 					}
-					String downloadClass = ((TagNode) anchors[0]).getAttributeByName("class");
+					String downloadClass = ((TagNode) anchors[0])
+							.getAttributeByName("class");
 					if (downloadClass.contains("down-lrc-btn")) {
 						int openingBrace = downloadClass.indexOf('{');
-						int closingQuote = downloadClass.lastIndexOf('}');
-						String href = downloadClass.substring(openingBrace, closingQuote + 1);
+						int closingBrace = downloadClass.lastIndexOf('}');
+						String href = downloadClass.substring(openingBrace,
+								closingBrace + 1);
 						// System.out.println(href);
 
 						JSONObject jsonObject = new JSONObject(href);

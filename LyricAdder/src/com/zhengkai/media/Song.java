@@ -59,7 +59,7 @@ public class Song extends MusicObject {
 	 * 通过指定的歌曲文件位置构造歌曲对象
 	 * 
 	 * @param filePath
-	 *        歌曲文件的位置
+	 *            歌曲文件的位置
 	 */
 	public Song(String filePath) {
 		super(filePath);
@@ -130,7 +130,8 @@ public class Song extends MusicObject {
 			getArtistFromTag();
 
 		} catch (IOException | TagException | ReadOnlyFileException
-				| InvalidAudioFrameException | CannotReadException | CannotWriteException e) {
+				| InvalidAudioFrameException | CannotReadException
+				| CannotWriteException e) {
 			e.printStackTrace();
 		}
 
@@ -141,9 +142,9 @@ public class Song extends MusicObject {
 	 * 判断标签中的字段是否为空，“空”即不存在或者全部为空格
 	 * 
 	 * @param tag
-	 *        标签
+	 *            标签
 	 * @param key
-	 *        字段
+	 *            字段
 	 * @return 是否为空
 	 */
 	private boolean isEmpty(Tag tag, FieldKey key) {
@@ -223,7 +224,7 @@ public class Song extends MusicObject {
 	 * 根据指定的歌词对象，为歌曲添加歌词
 	 * 
 	 * @param lyric
-	 *        要添加的歌词对象
+	 *            要添加的歌词对象
 	 */
 	public void setLyric(Lyric lyric) {
 		try {
@@ -235,7 +236,8 @@ public class Song extends MusicObject {
 			} else if (extensionName.equals(".m4a")) {
 				this.audioFile.commit();
 			}
-		} catch (KeyNotFoundException | IOException | TagException | CannotWriteException e) {
+		} catch (KeyNotFoundException | IOException | TagException
+				| CannotWriteException e) {
 			e.printStackTrace();
 		}
 	}
@@ -254,7 +256,8 @@ public class Song extends MusicObject {
 	 */
 	public void outputInfo() {
 		if (extensionName.equals(".mp3")) {
-			MP3AudioHeader mp3AudioHeader = (MP3AudioHeader) this.mp3File.getAudioHeader();
+			MP3AudioHeader mp3AudioHeader = (MP3AudioHeader) this.mp3File
+					.getAudioHeader();
 
 			System.out.println(mp3AudioHeader.getTrackLength());
 			System.out.println(mp3AudioHeader.getSampleRateAsNumber());
@@ -271,7 +274,8 @@ public class Song extends MusicObject {
 	public void renameFileUsingTitleInTag() {
 		if (this.title != null) {
 			int slash = filePath.lastIndexOf('\\');
-			String newFilePath = filePath.substring(0, slash + 1) + title + extensionName;
+			String newFilePath = filePath.substring(0, slash + 1) + title
+					+ extensionName;
 
 			File newFile = new File(newFilePath);
 

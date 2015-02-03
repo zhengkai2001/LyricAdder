@@ -37,7 +37,7 @@ public class LyricHelper {
 	 * 从网上获取歌词
 	 * 
 	 * @param song
-	 *        要获取歌词的歌曲
+	 *            要获取歌词的歌曲
 	 * @return 歌词容器
 	 */
 	public ArrayList<String> getLyricFromInternet(Song song) {
@@ -96,11 +96,11 @@ public class LyricHelper {
 	 * 设定要使用的歌词站点
 	 * 
 	 * @param baidu
-	 *        是否使用百度音乐
+	 *            是否使用百度音乐
 	 * @param gecimi
-	 *        是否使用歌词迷
+	 *            是否使用歌词迷
 	 * @param lyricwiki
-	 *        是否使用lyricwiki
+	 *            是否使用lyricwiki
 	 */
 	public void setLyricSites(boolean baidu, boolean gecimi, boolean lyricwiki) {
 		this.baidu = baidu;

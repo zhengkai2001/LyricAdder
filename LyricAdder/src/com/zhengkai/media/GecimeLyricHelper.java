@@ -28,9 +28,9 @@ public class GecimeLyricHelper extends LyricHelperBase {
 	 * 从歌词迷网站获取歌词
 	 * 
 	 * @param song
-	 *        歌曲
+	 *            歌曲
 	 * @param searchArtist
-	 *        是否要搜索歌手名
+	 *            是否要搜索歌手名
 	 * @return 歌词
 	 */
 	public ArrayList<String> getLyric(Song song, boolean searchArtist) {
@@ -48,7 +48,7 @@ public class GecimeLyricHelper extends LyricHelperBase {
 		if (htmlString == null) {
 			return null;
 		}
-		
+
 		JSONObject JSONResult = new JSONObject(htmlString);
 
 		if (JSONResult.getInt("count") != 0) {

@@ -66,7 +66,7 @@ public class MusicObject {
 	 * 根据音乐文件的路径得到音乐文件的完整文件名
 	 * 
 	 * @param filePath
-	 *        路径
+	 *            路径
 	 * @return 完整文件名
 	 */
 	private String getFileFullName(String filePath) {
@@ -78,7 +78,7 @@ public class MusicObject {
 	 * 根据音乐文件的完整文件名得到文件名（就是去掉了扩展名）
 	 * 
 	 * @param fileFullName
-	 *        完整文件名
+	 *            完整文件名
 	 * @return 文件名
 	 */
 	private String getFileName(String fileFullName) {
@@ -90,7 +90,7 @@ public class MusicObject {
 	 * 根据音乐文件的完整文件名得到扩展名
 	 * 
 	 * @param fileFullName
-	 *        完整文件名
+	 *            完整文件名
 	 * @return 扩展名
 	 */
 	private String getExtensionName(String fileFullName) {
@@ -102,7 +102,7 @@ public class MusicObject {
 	 * 根据文件名得到歌名
 	 * 
 	 * @param fileName
-	 *        文件名
+	 *            文件名
 	 * @return 歌名
 	 */
 	protected String getTitle(String fileName) {
@@ -118,7 +118,7 @@ public class MusicObject {
 	 * 根据文件名得到歌手名
 	 * 
 	 * @param fileName
-	 *        文件名
+	 *            文件名
 	 * @return 歌手名
 	 */
 	protected String getArtist(String fileName) {
@@ -134,11 +134,11 @@ public class MusicObject {
 	 * 删除字符串中，指定符号中间的内容（包括符号本身）
 	 * 
 	 * @param string
-	 *        输入字符串
+	 *            输入字符串
 	 * @param left
-	 *        左侧符号
+	 *            左侧符号
 	 * @param right
-	 *        右侧符号
+	 *            右侧符号
 	 * @return 删除了内容的字符串
 	 */
 	protected String deleteSectionBetween(String string, char left, char right) {

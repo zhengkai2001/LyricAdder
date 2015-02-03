@@ -9,8 +9,7 @@ import org.htmlcleaner.TagNode;
 import org.htmlcleaner.XPatherException;
 
 /**
- * 从lyricwiki网站下载歌词
- * http://api.wikia.com/wiki/LyricWiki_API
+ * 从lyricwiki网站下载歌词 http://api.wikia.com/wiki/LyricWiki_API
  * 
  * @author zhengkai
  * @date 2014年4月15日
@@ -33,7 +32,7 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 	 * 从LyricWiki获取歌词
 	 * 
 	 * @param song
-	 *        歌曲
+	 *            歌曲
 	 * @return 歌词
 	 */
 	public ArrayList<String> getLyric(Song song) {
@@ -47,7 +46,8 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 
 		String title = processString(song.title);
 		String artist = processString(song.artist);
-		String urlString = urlStringBase + "&artist=" + artist + "&song=" + title + xmlFormat;
+		String urlString = urlStringBase + "&artist=" + artist + "&song="
+				+ title + xmlFormat;
 
 		try {
 			String htmlContent = null;
@@ -100,7 +100,8 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 
 			// <div class="lyricbox">
 			// <div><a></a><span></span></div>
-			// Memories, how they fade so fast<br>Look back, that is no escape<br>
+			// Memories, how they fade so fast<br>Look back, that is no
+			// escape<br>
 			// </div>
 
 			// 提取歌词
@@ -112,7 +113,8 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 
 			foundMessage();
 
-			CompactHtmlSerializer chs = new CompactHtmlSerializer(new CleanerProperties());
+			CompactHtmlSerializer chs = new CompactHtmlSerializer(
+					new CleanerProperties());
 			String rawLyricDivString = chs.getAsString((TagNode) anchor);
 			return getLyricFromRaw(rawLyricDivString);
 		} catch (XPatherException e) {
@@ -128,8 +130,10 @@ public class LyricwikiLyricHelper extends LyricHelperBase {
 		int begin = lyricString.indexOf(beginString);
 		int end = lyricString.lastIndexOf(endString);
 
-		if (begin != -1 && end != lyricString.length() && begin + beginString.length() < end) {
-			lyricString = lyricString.substring(begin + beginString.length(), end);
+		if (begin != -1 && end != lyricString.length()
+				&& begin + beginString.length() < end) {
+			lyricString = lyricString.substring(begin + beginString.length(),
+					end);
 		} else {
 			return null;
 		}

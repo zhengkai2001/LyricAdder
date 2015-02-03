@@ -29,9 +29,9 @@ class URLLabel extends JLabel {
 	 * 根据指定文字和超链接构造URLLabel
 	 * 
 	 * @param text
-	 *        指定的文字
+	 *            指定的文字
 	 * @param urlText
-	 *        指定的超链接文字
+	 *            指定的超链接文字
 	 */
 	public URLLabel(String text, String urlText) {
 		super("<html><u>" + text + "</u></html>");
@@ -45,13 +45,15 @@ class URLLabel extends JLabel {
 		this.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				URLLabel.this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				URLLabel.this.setCursor(Cursor
+						.getPredefinedCursor(Cursor.HAND_CURSOR));
 				URLLabel.this.setForeground(Color.BLUE);
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				URLLabel.this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				URLLabel.this.setCursor(Cursor
+						.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				URLLabel.this.setForeground(normalColor);
 			}
 

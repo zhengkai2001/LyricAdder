@@ -32,7 +32,7 @@ public abstract class LyricHelperBase {
 
 	/**
 	 * @param urlString
-	 *        指定的URL
+	 *            指定的URL
 	 * @return HTML内容字符串
 	 */
 	protected String getHTMLFromURL(String urlString) {
@@ -74,7 +74,7 @@ public abstract class LyricHelperBase {
 	 * * 从指定的URL下载LRC歌词，并存入歌词容器
 	 * 
 	 * @param urlString
-	 *        LRC歌词文件的地址
+	 *            LRC歌词文件的地址
 	 * @return 歌词
 	 */
 	protected ArrayList<String> getLRCFromURL(String urlString) {
@@ -91,8 +91,8 @@ public abstract class LyricHelperBase {
 			if (inputStream == null) {
 				return null;
 			} else {
-				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream,
-						encoding));
+				BufferedReader reader = new BufferedReader(
+						new InputStreamReader(inputStream, encoding));
 
 				// 开始下载歌词
 				String line;
@@ -113,7 +113,7 @@ public abstract class LyricHelperBase {
 	 * 将歌名或歌手名中的空格替换为%20
 	 * 
 	 * @param string
-	 *        输入字符串
+	 *            输入字符串
 	 * @return 替换后的字符串
 	 */
 	protected String replaceSpaces(String string) {
@@ -124,15 +124,16 @@ public abstract class LyricHelperBase {
 	 * 判定歌曲与歌名、歌手名是否匹配
 	 * 
 	 * @param song
-	 *        歌曲
+	 *            歌曲
 	 * @param title
-	 *        歌名
+	 *            歌名
 	 * @param artist
-	 *        歌手名
+	 *            歌手名
 	 * @return 是否匹配
 	 */
 	protected boolean matched(Song song, String title, String artist) {
-		if (song.title == null || song.artist == null || title == null || artist == null) {
+		if (song.title == null || song.artist == null || title == null
+				|| artist == null) {
 			return false;
 		} else {
 			return (song.titleLowerCase.contains(title.toLowerCase()) && song.artistLowerCase
@@ -150,7 +151,7 @@ public abstract class LyricHelperBase {
 	 * 判断字符串中是否含有中文
 	 * 
 	 * @param string
-	 *        待判断字符串
+	 *            待判断字符串
 	 * @return 是否含有中文
 	 */
 	protected boolean hasChinese(String string) {
@@ -163,12 +164,11 @@ public abstract class LyricHelperBase {
 	}
 
 	/**
-	 * 处理URL中的用于搜索的字符串（歌名、歌手名）
-	 * 1. 使用URLEncode.encode()编码中文
-	 * 2. 由于encode()会将空格替换为“+”，而有些网站不认识“+”，所以还要将“+”替换为“%20”
+	 * 处理URL中的用于搜索的字符串（歌名、歌手名） 1. 使用URLEncode.encode()编码中文 2.
+	 * 由于encode()会将空格替换为“+”，而有些网站不认识“+”，所以还要将“+”替换为“%20”
 	 * 
 	 * @param string
-	 *        待处理的字符串
+	 *            待处理的字符串
 	 * @return 处理完毕的字符串
 	 */
 	protected String processString(String string) {
@@ -178,7 +178,8 @@ public abstract class LyricHelperBase {
 		String result = null;
 		try {
 			// System.out.println(string);
-			result = URLEncoder.encode(string, encoding).replaceAll("\\+", "%20");
+			result = URLEncoder.encode(string, encoding).replaceAll("\\+",
+					"%20");
 			// System.out.println(result);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
@@ -191,9 +192,9 @@ public abstract class LyricHelperBase {
 	 * 判定歌曲与歌名是否匹配
 	 * 
 	 * @param song
-	 *        歌曲
+	 *            歌曲
 	 * @param title
-	 *        歌名
+	 *            歌名
 	 * @return 是否匹配
 	 */
 	protected boolean matched(Song song, String title) {

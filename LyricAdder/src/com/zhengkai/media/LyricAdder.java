@@ -21,10 +21,8 @@ public class LyricAdder extends Thread {
 	private ArrayList<MusicObject> lyrics;
 
 	private HashMap<String, String[]> extensionMap = new HashMap<String, String[]>();
-	private String[] musicFileExtensions = new String[] {
-			".mp3", ".m4a" };
-	private String[] lyricFileExtensions = new String[] {
-			".lrc", ".txt" };
+	private String[] musicFileExtensions = new String[] { ".mp3", ".m4a" };
+	private String[] lyricFileExtensions = new String[] { ".lrc", ".txt" };
 
 	@SuppressWarnings("rawtypes")
 	private HashMap<String, Class> classMap = new HashMap<String, Class>();
@@ -56,8 +54,8 @@ public class LyricAdder extends Thread {
 	private void removeTag() {
 		for (int i = 0; i != songs.size(); i++) {
 			Song song = (Song) songs.get(i);
-			System.out.println("第" + (i + 1) + "首：[" + song.title + "][" + song.artist + "]\n"
-					+ song.filePath);
+			System.out.println("第" + (i + 1) + "首：[" + song.title + "]["
+					+ song.artist + "]\n" + song.filePath);
 			song.removeTag();
 		}
 	}
@@ -68,13 +66,14 @@ public class LyricAdder extends Thread {
 	private void addLyricsFromInternet() {
 		for (int i = 0; i != songs.size(); i++) {
 			Song song = (Song) songs.get(i);
-			System.out.println("第" + (i + 1) + "首：[" + song.title + "][" + song.artist + "]\n"
-					+ song.filePath);
+			System.out.println("第" + (i + 1) + "首：[" + song.title + "]["
+					+ song.artist + "]\n" + song.filePath);
 
 			// song.renameFileUsingTitleInTag();
 			// song.outputTag();
 
-			ArrayList<String> lyricLines = lyricHelper.getLyricFromInternet(song);
+			ArrayList<String> lyricLines = lyricHelper
+					.getLyricFromInternet(song);
 			if (lyricLines != null) {
 				Lyric lyric = new Lyric(lyricLines);
 				lyric.save(lyricDirectory);
@@ -90,11 +89,11 @@ public class LyricAdder extends Thread {
 	 * 在指定目录下，遍历指定类型的文件
 	 * 
 	 * @param mol
-	 *        用于存放遍历结果的容器
+	 *            用于存放遍历结果的容器
 	 * @param path
-	 *        指定的目录
+	 *            指定的目录
 	 * @param type
-	 *        指定的文件类型
+	 *            指定的文件类型
 	 */
 	private void travel(String path, String type) {
 		ArrayList<MusicObject> mol = arrayListMap.get(type);
@@ -106,13 +105,13 @@ public class LyricAdder extends Thread {
 	 * 在指定目录下，遍历指定类型的文件
 	 * 
 	 * @param mol
-	 *        用于存放遍历结果的容器
+	 *            用于存放遍历结果的容器
 	 * @param path
-	 *        指定的目录
+	 *            指定的目录
 	 * @param type
-	 *        指定的文件类型
+	 *            指定的文件类型
 	 * @param extensions
-	 *        指定的文件扩展名
+	 *            指定的文件扩展名
 	 */
 	private void travel(ArrayList<MusicObject> mol, String path, String type,
 			String[] extensions) {
@@ -133,14 +132,16 @@ public class LyricAdder extends Thread {
 					if (absolutePath.endsWith(extension)) {
 
 						try {
-							@SuppressWarnings({
-									"rawtypes", "unchecked" })
-							Constructor constructor = classMap.get(type).getConstructor(
-									String.class);
-							mol.add((MusicObject) constructor.newInstance(absolutePath));
+							@SuppressWarnings({ "rawtypes", "unchecked" })
+							Constructor constructor = classMap.get(type)
+									.getConstructor(String.class);
+							mol.add((MusicObject) constructor
+									.newInstance(absolutePath));
 						} catch (NoSuchMethodException | SecurityException
-								| InstantiationException | IllegalAccessException
-								| IllegalArgumentException | InvocationTargetException e) {
+								| InstantiationException
+								| IllegalAccessException
+								| IllegalArgumentException
+								| InvocationTargetException e) {
 							e.printStackTrace();
 						}
 					}
@@ -155,7 +156,8 @@ public class LyricAdder extends Thread {
 	private void addLyricsLocal() {
 		for (int i = 0; i != songs.size(); i++) {
 			Song song = (Song) songs.get(i);
-			System.out.println("第" + (i + 1) + "首：" + song.title + " " + song.filePath);
+			System.out.println("第" + (i + 1) + "首：" + song.title + " "
+					+ song.filePath);
 			// song.renameFileUsingTitleInTag();
 			// song.outputTag();
 
@@ -176,15 +178,18 @@ public class LyricAdder extends Thread {
 	 * 判定歌曲与歌词是否匹配
 	 * 
 	 * @param song
-	 *        歌曲
+	 *            歌曲
 	 * @param lyric
-	 *        歌词
+	 *            歌词
 	 * @return 是否匹配
 	 */
 	protected boolean matched(Song song, Lyric lyric) {
-		return ((song.title.contains(lyric.title) && song.artist.contains(lyric.artist))
-				|| (song.title.contains(lyric.title) && lyric.artist.contains(song.artist))
-				|| (lyric.title.contains(song.title) && lyric.artist.contains(song.artist)) || (lyric.title
+		return ((song.title.contains(lyric.title) && song.artist
+				.contains(lyric.artist))
+				|| (song.title.contains(lyric.title) && lyric.artist
+						.contains(song.artist))
+				|| (lyric.title.contains(song.title) && lyric.artist
+						.contains(song.artist)) || (lyric.title
 				.contains(song.title) && song.artist.contains(lyric.artist)));
 	}
 
